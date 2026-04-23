@@ -242,6 +242,7 @@ tbody tr:last-child td{border-bottom:none}
       <button class="nav-tab" data-page="token">Tokenisation</button>
       <button class="nav-tab" data-page="alt">Alt Sports</button>
       <button class="nav-tab" data-page="rwa">RWA Intel</button>
+      <button class="nav-tab" data-page="pe-investors">PE Investors</button>
     </nav>
     <div class="header-right">
       <span class="badge-count" id="deal-count">-- deals</span>
@@ -500,6 +501,36 @@ tbody tr:last-child td{border-bottom:none}
       <!-- Activity feed -->
       <div id="rwa-sec-activity" style="display:none;flex:1;min-height:0;overflow-y:auto">
         <div id="rwa-activity-feed" style="padding:8px 24px 24px"></div>
+      </div>
+    </div>
+
+    <!-- ── PE INVESTORS ─────────────────────────────────────────────────── -->
+    <div class="page" id="page-pe-investors">
+      <div class="page-top">
+        <div>
+          <div class="page-title">Active PE Investors</div>
+          <div class="page-sub">Ranked by deal count across all transactions in this database</div>
+        </div>
+        <div class="pill-group" id="pe-filter-group">
+          <button class="pill active" onclick="setPeFilter('all',this)">All Firms</button>
+          <button class="pill" onclick="setPeFilter('pe',this)">PE Funds</button>
+          <button class="pill" onclick="setPeFilter('family',this)">Family / Founder</button>
+          <button class="pill" onclick="setPeFilter('credit',this)">Credit</button>
+        </div>
+      </div>
+      <div class="tbl-wrap" style="overflow-y:auto;flex:1">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th>Firm</th>
+            <th class="hide-mobile">Type</th>
+            <th style="text-align:right">Deals in DB</th>
+            <th style="text-align:right" class="hide-mobile">AUM</th>
+            <th>League Presence</th>
+            <th style="text-align:right">Status</th>
+          </tr></thead>
+          <tbody id="pe-body"></tbody>
+        </table>
       </div>
     </div>
 
@@ -822,6 +853,249 @@ let franchiseSort={col:'year',dir:-1};
 // ── DEAL COUNT ───────────────────────────────────────────────────────────────
 const totalDeals = franchiseDeals.length + euroDeals.length + mediaDeals.length + tokenDeals.length;
 document.getElementById('deal-count').textContent = totalDeals + ' deals tracked';
+
+// ── PE INVESTORS DATA ─────────────────────────────────────────────────────────
+const peInvestors = [
+  {
+    id:'pi1',rank:1,name:'CVC Capital Partners',short:'CVC',type:'pe',typeLabel:'PE Fund',typeBadge:'b-seriea',
+    aum:'~€160B',dealCount:7,status:'Active',statusBadge:'b-full',
+    founded:'1981',hq:'Luxembourg',focus:'Commercial rights, broadcast income',
+    leagues:['La Liga','Ligue 1','Premiership Rugby','URC','Six Nations','IPL'],
+    leagueLabel:'La Liga, Ligue 1, Rugby, IPL',
+    deals:[
+      'La Liga — Boost LaLiga 8.2% (€1.994B, 50yr)',
+      'Ligue 1 — LFP Media 13% (€1.66B, 50yr)',
+      'Premiership Rugby — commercial majority',
+      'United Rugby Championship — ~28% commercial',
+      'Six Nations — 14.3% commercial (£365M)',
+      'Gujarat Titans IPL — 67% franchise (sold 2025 at ~$575M)',
+      'Serie A — €1.7B proposed stake (FAILED, 2021)'
+    ],
+    topDeal:'La Liga Boost LaLiga €1.994B (2021)',
+    keyFact:'Formed Global Sport Group (GSG) in September 2025 — a $14B permanent capital holding company consolidating all CVC sports properties into a single perpetual vehicle. The La Liga and Ligue 1 positions alone represent €3.65B deployed for 50-year commercial revenue stakes.',
+    strategy:'CVC\'s sports thesis is infrastructure PE, not club equity. It acquires long-duration cash flows from broadcast and commercial revenues without taking on club operating costs, relegation risk, or governance obligations. The 50-year revenue stakes function as fixed-duration royalty streams on the growth of European football media rights.',
+    risk:'Terminal value risk on the 50yr stakes if streaming fragments the existing broadcast model. Real Madrid, Barcelona, and Athletic Bilbao opted out of the La Liga deal, which is the most significant structural drag on the asset\'s commercial upside.',
+    source:'https://www.cvc.com/strategies/sports-media-entertainment/'
+  },
+  {
+    id:'pi2',rank:2,name:'Sixth Street Partners',short:'6th St',type:'pe',typeLabel:'PE / Credit',typeBadge:'b-pe',
+    aum:'~$75B',dealCount:5,status:'Active',statusBadge:'b-full',
+    founded:'2009',hq:'San Francisco, CA',focus:'Revenue securitization, sports credit',
+    leagues:['La Liga','Premier League','NFL','NWSL'],
+    leagueLabel:'La Liga, EPL, NFL, NWSL',
+    deals:[
+      'FC Barcelona — €507M for 25% of 25yr LaLiga TV rights (2022)',
+      'Real Madrid — $380M for 30% of Bernabeu revenue (2022)',
+      'Boston Celtics — Lead lender in $6.1B acquisition consortium (2025)',
+      'New England Patriots — 3% stake, $9B+ implied valuation (2025)',
+      'Bay FC (NWSL) — Majority founding investor, $125M franchise fee (2024)'
+    ],
+    topDeal:'FC Barcelona LaLiga TV rights €507M (2022)',
+    keyFact:'Sixth Street is the most active sports PE firm by deal count in North American professional leagues. It holds positions across NFL, NBA, La Liga, and NWSL simultaneously. The Barcelona and Real Madrid deals established a replicable revenue securitization template that no other firm has matched in scale.',
+    strategy:'Revenue securitization without equity. Sixth Street targets contractual cash flows — broadcast income, stadium hospitality, naming rights — that carry predictable duration and minimal operational risk. The firm avoids club equity and governance exposure entirely, structuring debt-like instruments that generate fixed returns irrespective of sporting performance.',
+    risk:'Interest rate sensitivity on long-duration revenue deals. Barcelona\'s financials deteriorated materially after the TV rights deal closed, raising counterparty risk. The Celtics consortium position carries standard franchise equity risk if the NBA\'s next TV cycle underperforms the $76B contract.',
+    source:'https://sixthstreet.com/sports'
+  },
+  {
+    id:'pi3',rank:3,name:'RedBird Capital Partners',short:'RedBird',type:'pe',typeLabel:'PE Fund',typeBadge:'b-broadcast',
+    aum:'~$9B',dealCount:5,status:'Active',statusBadge:'b-full',
+    founded:'2014',hq:'New York, NY',focus:'Sports + media ecosystem, multi-club networks',
+    leagues:['Serie A','Ligue 1','Premier League (FSG)','Formula 1','College Athletics'],
+    leagueLabel:'Serie A, Ligue 1, F1, College',
+    deals:[
+      'Toulouse FC — 100% (€25M, 2021), Ligue 1 feeder club',
+      'Liverpool FC via FSG — £533M for ~11% of FSG (2021)',
+      'AC Milan — 100% (€1.2B, 2022)',
+      'Alpine F1 — 24% minority (€200M, 2023)',
+      'Big 12 — $500M credit facility for college athletics (2025)'
+    ],
+    topDeal:'AC Milan 100% acquisition €1.2B (2022)',
+    keyFact:'Toulouse-to-Milan is the defining multi-club pipeline in global football: RedBird deploys talent sourced through Toulouse into AC Milan, reducing transfer cost while generating data advantage at each stage. Gerry Cardinale spent 15 years at Goldman Sachs building media and sports relationships before founding RedBird.',
+    strategy:'RedBird bets that sports rights and media are structurally converging. The firm acquires content producers (clubs, teams) and pairs them with distribution infrastructure (FSG\'s media relationships, Alpine\'s F1 global broadcast reach). The $500M Big 12 credit facility is an early play on college athletics professionalization post-House v. NCAA.',
+    risk:'Concentrated in European football at elevated entry multiples. AC Milan\'s €1.2B purchase price reflected a strong competitive position that has since been challenged by Inter Milan and Juventus. RedBird\'s AUM base is small relative to CVC and Sixth Street, limiting diversification.',
+    source:'https://redbirdcap.com'
+  },
+  {
+    id:'pi4',rank:4,name:'Arctos Partners (acq. KKR)',short:'Arctos/KKR',type:'pe',typeLabel:'PE Fund',typeBadge:'b-partial',
+    aum:'$7B at acq.',dealCount:4,status:'Acquired',statusBadge:'b-partial',
+    founded:'2019',hq:'Dallas, TX (orig.)',focus:'Passive minority stakes, North American pro sports',
+    leagues:['NBA','NFL','Serie A'],
+    leagueLabel:'NBA, NFL, Serie A',
+    deals:[
+      'Utah Jazz — minority PE stake (2021)',
+      'Buffalo Bills — ~8% minority, $5.8B implied (2024)',
+      'LA Chargers — ~8% minority, ~$5.5B implied (2024)',
+      'Atalanta BC — small minority alongside Bain Capital (2023)'
+    ],
+    topDeal:'Buffalo Bills ~8% stake at $5.8B implied (2024)',
+    keyFact:'KKR acquired Arctos Partners for up to $1.9B in February 2026, folding its 23-team portfolio (including Dodgers, Giants, Jazz, Warriors, PSG, Aston Martin F1 among others) into KKR Solutions. The acquisition is the defining consolidation event in sports PE: the boutique specialist era is over and the mega-fund era has begun.',
+    strategy:'Arctos built the passive minority franchise model — no governance rights, board seats, or operational input. Pure financial stake in franchise asset appreciation and NBA/NFL broadcast rights inflation. The thesis: US pro sports franchises are monopoly-protected, supply-constrained assets that reprice every broadcast cycle.',
+    risk:'The KKR acquisition carries integration risk. Arctos\'s edge was sports-specialist human capital (Ian Charles); folding that into a $500B mega-fund changes the investment culture. The NFL PE cap at 10% per firm limits upside concentration in the highest-value franchises.',
+    source:'https://www.wsj.com/finance/investing/kkr-arctos-sports-deal-1b-a459a27c'
+  },
+  {
+    id:'pi5',rank:5,name:'Silver Lake Partners',short:'Silver Lake',type:'pe',typeLabel:'PE / Tech',typeBadge:'b-nba',
+    aum:'~$100B',dealCount:2,status:'Active',statusBadge:'b-full',
+    founded:'1999',hq:'New York, NY',focus:'Technology platforms embedded in sports',
+    leagues:['Premier League (CFG)','La Liga (CFG)','MLS (CFG)','A-League (CFG)'],
+    leagueLabel:'Man City / CFG global portfolio',
+    deals:[
+      'City Football Group — $500M for 10% at $4.8B valuation (2019)',
+      'City Football Group — Additional $500M, stake grows to ~17% (2023)'
+    ],
+    topDeal:'City Football Group $1B total deployment at ~17% (2019 + 2023)',
+    keyFact:'CFG is the world\'s most sophisticated multi-club operator with 13 clubs across 5 continents. Silver Lake\'s thesis is not football — it is the data and technology infrastructure CFG sits on top of. The firm\'s core competency is technology platform investing; CFG\'s analytics stack, broadcast tech, and global fanbase data are the actual assets Silver Lake is buying.',
+    strategy:'Silver Lake treats CFG as a technology platform investment, not a football club. The firm applies the same framework it used for Dell, Endeavor, and Live Nation: find an analog-to-digital transition in a large consumer market and provide patient growth capital to the best-positioned operator. CFG\'s implied valuation grew from $4.8B (2019) to ~$10B+ at the 2023 top-up.',
+    risk:'Manchester City\'s 115-charge FFP case (verdict pending as of 2025) is an existential headline risk to CFG\'s Premier League position. A severe sanction, including points deduction or relegation, would reset the CFG asset valuation materially. Silver Lake has no governance protection against this outcome.',
+    source:'https://www.silverlake.com'
+  },
+  {
+    id:'pi6',rank:6,name:'Friedkin Group',short:'Friedkin',type:'family',typeLabel:'Family Office',typeBadge:'b-epl',
+    aum:'Private (~$9B net)',dealCount:2,status:'Active',statusBadge:'b-full',
+    founded:'Dan Friedkin, Houston TX',hq:'Houston, TX',focus:'Owner-operator, lifestyle brands',
+    leagues:['Serie A','Premier League'],
+    leagueLabel:'Serie A (Roma), EPL (Everton)',
+    deals:[
+      'AS Roma — 87% acquisition (€591M from Pallotta, 2020)',
+      'Everton FC — Majority acquisition (£400M+ inc. debt, 2024)'
+    ],
+    topDeal:'AS Roma €591M (2020)',
+    keyFact:'Dan Friedkin is primarily a luxury automotive and hospitality entrepreneur (Friedkin Companies: the largest Toyota distributor in the US). Both Roma and Everton were distressed acquisitions. Roma was bought from a failed US ownership group; Everton from a shareholder structure that had become untenable under 777 Partners\' failed pursuit.',
+    strategy:'Friedkin invests as a principal, not a fund manager. The Roma purchase gave him one of the world\'s most globally marketed football brands at a discount to intrinsic value; Everton gave him entry into the Premier League. The two-club portfolio mirrors the emerging European multi-club template despite being a family office rather than a PE vehicle.',
+    risk:'Everton\'s new Bramley-Moore Dock stadium (£760M+ budget, opening 2025-26) is a significant capital commitment layered on top of a club that was in bottom-half Premier League form at acquisition. Combined European exposure is concentrated in two clubs that consistently underperform sporting expectations relative to wage investment.',
+    source:'https://www.friedkin.com'
+  },
+  {
+    id:'pi7',rank:7,name:'INEOS (Jim Ratcliffe)',short:'INEOS',type:'family',typeLabel:'Industrial / Family',typeBadge:'b-epl',
+    aum:'Private (~£15B net worth)',dealCount:2,status:'Active',statusBadge:'b-full',
+    founded:'1998',hq:'London / Monaco',focus:'Operational efficiency, multi-club',
+    leagues:['Premier League','Ligue 1'],
+    leagueLabel:'Man Utd, OGC Nice, FC Lausanne',
+    deals:[
+      'OGC Nice — 100% acquisition (~€100M, 2019)',
+      'Manchester United — 27.7% and sporting control (£1.26B, 2023)'
+    ],
+    topDeal:'Manchester United 27.7% + sporting control £1.26B (2023)',
+    keyFact:'Jim Ratcliffe became the richest person in Britain in 2023. INEOS is a chemicals giant with £60B+ annual revenue, not a PE fund. Ratcliffe applies an industrial cost-control mentality to clubs — cutting payroll, restructuring operations — which has been well-received at Man United where the Glazer era left significant operational waste. INEOS retains sporting control of Man Utd while Glazers hold financial ownership.',
+    strategy:'INEOS treats sports as an operational investment, not a financial one. The thesis at Nice was: buy an undervalued French club at a discount, apply INEOS process discipline, and use it as a development pathway to larger acquisitions. Man Utd is the platform asset. FC Lausanne is the developmental club. Nice links to both.',
+    risk:'The Man Utd position is complicated by Glazer family retention of financial control. Ratcliffe controls football operations but cannot control the club\'s balance sheet, transfer budget structure, or dividend policy. The relationship is adversarial at times. Nice is currently being explored for sale at ~€200-250M as INEOS rationalizes capital commitments.',
+    source:'https://www.ineos.com/interests/sport/'
+  },
+  {
+    id:'pi8',rank:8,name:'Harris Blitzer Sports & Ent.',short:'HBSE',type:'family',typeLabel:'Operator / Family',typeBadge:'b-nfl',
+    aum:'Multi-billion (family office)',dealCount:2,status:'Active',statusBadge:'b-full',
+    founded:'2011 (76ers stake)',hq:'Philadelphia, PA',focus:'North American sports + limited European exposure',
+    leagues:['NFL','Premier League','NBA','NHL'],
+    leagueLabel:'NFL (Commanders), EPL (Crystal Palace, sold)',
+    deals:[
+      'Crystal Palace FC EPL — ~36% stake (~£50M implied, 2015; sold to Textor)',
+      'Washington Commanders — Full acquisition ($6.05B, 2023)'
+    ],
+    topDeal:'Washington Commanders $6.05B full acquisition (2023)',
+    keyFact:'Josh Harris co-founded Apollo Global Management in 1990. He assembled one of the largest sports portfolios in North America: Philadelphia 76ers (controlling majority), Philadelphia Flyers (NHL, majority), and Washington Commanders (NFL, 100%). The $6.05B Commanders deal is the largest NFL franchise sale in history as of close. Harris exited Crystal Palace to Textor at a materially higher valuation than his 2015 entry.',
+    strategy:'HBSE operates as a multi-league owner-operator with a deliberate NBA-NFL concentration. Harris understands that NFL and NBA broadcast cycles reprice franchise values every decade, making passive holding the optimal strategy. The Crystal Palace entry was opportunistic European exposure that was monetized once a better-capitalized buyer appeared.',
+    risk:'The Commanders acquisition at $6.05B embedded significant leverage. At that price, Harris needs the NFL\'s next broadcast cycle (post-2033) to deliver to justify the entry multiple. DC market dynamics add political complexity that most NFL owners avoid.',
+    source:'https://www.hbse.com'
+  },
+  {
+    id:'pi9',rank:9,name:'Ares Management',short:'Ares',type:'pe',typeLabel:'PE / Credit',typeBadge:'b-nfl',
+    aum:'~$450B',dealCount:1,status:'Active',statusBadge:'b-full',
+    founded:'1997',hq:'Los Angeles, CA',focus:'Credit + alternative assets, mainstream mega-fund sports entry',
+    leagues:['NFL'],
+    leagueLabel:'NFL (Miami Dolphins / Hard Rock)',
+    deals:[
+      'Miami Dolphins + Hard Rock Stadium + F1 Miami GP — 10% ($8.1B implied EV, Dec 2024)'
+    ],
+    topDeal:'Miami Dolphins / Hard Rock / F1 Miami GP 10% at $8.1B (2024)',
+    keyFact:'Ares is one of the five largest alternative asset managers globally. The Dolphins investment is notable precisely because it deployed from existing Ares PE fund vehicles, not a dedicated sports vehicle. This signals that mainstream mega-funds now treat sports franchises as a standard asset class, not a specialist vertical. Ares has the balance sheet to absorb a dozen more sports positions without portfolio-level impact.',
+    strategy:'The $8.1B enterprise value packages franchise equity, stadium real estate, and F1 event commercial rights in a single capitalization — the most complex deal structure in the NFL PE program. Ares is not buying a football team; it is buying a diversified live entertainment platform with franchise equity as the floor asset. The F1 Miami GP rights alone were valued at $700M+ by Forbes in 2024.',
+    risk:'Venue exposure introduces construction and maintenance capex risk. Hard Rock Stadium requires significant investment to remain competitive with new builds (Buffalo\'s $1.4B stadium, Titans\'s $2.1B stadium). NFL PE cap limits Ares to 10% passive exposure per franchise, capping upside concentration.',
+    source:'https://www.aresmgmt.com'
+  },
+  {
+    id:'pi10',rank:10,name:'Clearlake Capital',short:'Clearlake',type:'pe',typeLabel:'PE Fund',typeBadge:'b-epl',
+    aum:'~$90B',dealCount:1,status:'Active',statusBadge:'b-full',
+    founded:'2006',hq:'Santa Monica, CA',focus:'Data-driven operations, consumer and tech buyouts',
+    leagues:['Premier League','Ligue 1'],
+    leagueLabel:'EPL (Chelsea), Ligue 1 (Strasbourg via BlueCo)',
+    deals:[
+      'Chelsea FC — 60% of BlueCo consortium ($5.3B full deal, Clearlake majority, 2022)'
+    ],
+    topDeal:'Chelsea FC 60% via BlueCo $5.3B (2022)',
+    keyFact:'Chelsea was the largest PE acquisition in European football history at close. Clearlake co-invested with Todd Boehly (media executive) in BlueCo, which also acquired Strasbourg in June 2023 for a nominal fee to anchor a continental multi-club strategy. José Feliciano and Behdad Eghbali (Clearlake co-founders) are hands-on in Chelsea\'s football operations — an unusually interventionist approach for a PE firm.',
+    strategy:'Clearlake applies an operational value creation model borrowed from technology buyouts: data infrastructure, analytics, and talent identification as margin levers. The thesis at Chelsea is that a globally marketed Premier League club can generate returns via commercial revenue growth (shirt, sponsorship, streaming) independent of trophies. Chelsea\'s wage-to-revenue ratio at acquisition was among the worst in the Premier League.',
+    risk:'Chelsea has spent approximately $1B on transfers since Clearlake took control with mixed sporting results. Contract structures — multi-year, amortization-optimized deals — have drawn regulatory attention. The club\'s wage bill relative to revenue remains structurally elevated. UEFA multi-club rules constrain Strasbourg/Chelsea player flows.',
+    source:'https://www.clearlake.com'
+  },
+  {
+    id:'pi11',rank:11,name:'Oaktree Capital Management',short:'Oaktree',type:'credit',typeLabel:'Credit / Alt.',typeBadge:'b-seriea',
+    aum:'~$180B',dealCount:1,status:'Seeking exit',statusBadge:'b-partial',
+    founded:'1995',hq:'Los Angeles, CA',focus:'Distressed credit, loan-to-own',
+    leagues:['Serie A'],
+    leagueLabel:'Serie A (Inter Milan)',
+    deals:[
+      'Inter Milan — €395M loan seized via default; Zhang family missed repayment (2024)'
+    ],
+    topDeal:'Inter Milan debt-to-equity via Zhang family default €395M (2024)',
+    keyFact:'Oaktree is the world\'s leading distressed debt investor, founded by Howard Marks. The Inter Milan position was not an active sports investment: Oaktree extended a €395M bridge loan to the Zhang family in 2021 and received the club when Zhang defaulted in May 2024. Oaktree is actively seeking a buyer at a reported €1B+ implied valuation. The involuntary nature of the acquisition illustrates the loan-to-own pathway as a de facto sports PE entry mechanism.',
+    strategy:'Oaktree has no long-term sports mandate. The priority is an orderly exit at maximum recovery. The firm has appointed Beppe Marotta (former Juventus CEO) to manage the club during the sale process and has maintained stability by not restructuring operations aggressively. A controlled sale at €1B would represent a ~2.5x return on the original loan principal.',
+    risk:'Inter Milan\'s valuation is supported by 2023-24 Serie A success (Scudetto) and Champions League final appearances. A poor 2024-25 sporting season would depress buyer appetite. Italian football\'s structural revenue problem (no PE deal at the league level, lower broadcast income than EPL/La Liga) limits the buyer universe.',
+    source:'https://www.oaktreecapital.com'
+  }
+];
+
+let peFilter='all';
+
+function setPeFilter(f,el){
+  peFilter=f;
+  document.querySelectorAll('#pe-filter-group .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderPeTable();
+}
+
+function renderPeTable(){
+  const data=peFilter==='all'?peInvestors:peInvestors.filter(d=>d.type===peFilter);
+  document.getElementById('pe-body').innerHTML=data.map((d,i)=>`
+    <tr onclick="openPeModal(peInvestors.find(x=>x.id==='${d.id}'))">
+      <td style="color:var(--text3);font-family:var(--mono);font-size:11px">${d.rank}</td>
+      <td>
+        <div class="col-name">${d.name}</div>
+        <div class="col-sub">${d.hq}</div>
+      </td>
+      <td class="hide-mobile"><span class="badge ${d.typeBadge}">${d.typeLabel}</span></td>
+      <td style="text-align:right">
+        <span style="font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)">${d.dealCount}</span>
+        <span style="color:var(--text3);font-size:10px;margin-left:3px">deal${d.dealCount!==1?'s':''}</span>
+      </td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:var(--text2)" class="hide-mobile">${d.aum}</td>
+      <td style="font-size:11px;color:var(--text2)">${d.leagueLabel}</td>
+      <td style="text-align:right"><span class="badge ${d.statusBadge}">${d.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function openPeModal(d){
+  if(!d) return;
+  const dealList=d.deals.map(dl=>`<li style="margin-bottom:7px;color:var(--text2);font-size:12px;line-height:1.5">${dl}</li>`).join('');
+  openModal(`
+    <div class="modal-entity">${d.name}</div>
+    <div class="modal-badges"><span class="badge ${d.typeBadge}">${d.typeLabel}</span><span class="badge ${d.statusBadge}">${d.status}</span></div>
+    <div class="modal-amount" style="font-size:16px;margin-bottom:4px">${d.aum} AUM</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Founded ${d.founded} &middot; ${d.hq}</div>
+    <div class="modal-grid" style="margin-bottom:14px">
+      <div class="modal-field"><div class="modal-fk">Focus</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal">${d.focus}</div></div>
+      <div class="modal-field"><div class="modal-fk">Deals in DB</div><div class="modal-fv" style="font-family:var(--mono)">${d.dealCount}</div></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="modal-fk" style="margin-bottom:6px">Transactions</div>
+      <ul style="margin:0;padding-left:16px">${dealList}</ul>
+    </div>
+    <div class="modal-field" style="margin-bottom:12px"><div class="modal-fk">Strategy</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal;line-height:1.6">${d.strategy}</div></div>
+    <div class="modal-field" style="margin-bottom:12px"><div class="modal-fk">Key Risk</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal;line-height:1.6;color:var(--red)">${d.risk}</div></div>
+    <div class="modal-notes">${d.keyFact}</div>
+    ${sourceLink(d.source)}
+  `);
+}
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
 document.getElementById('main-nav').addEventListener('click', e=>{
@@ -1331,6 +1605,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   renderAltTable();
   renderRwaTable();
   renderRwaActivity();
+  renderPeTable();
 });
 </script>
 </body>

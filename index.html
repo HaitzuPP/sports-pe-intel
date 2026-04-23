@@ -445,14 +445,11 @@ tbody tr:last-child td{border-bottom:none}
         <table>
           <thead>
             <tr>
-              <th style="width:90px">Date</th>
-              <th style="width:160px">Entity</th>
-              <th>Category</th>
+              <th style="width:100px">Date</th>
+              <th style="width:180px">Entity</th>
+              <th style="width:200px">Category</th>
               <th>Structure</th>
-              <th style="text-align:right">Scale</th>
-              <th>Sport</th>
-              <th>Status</th>
-              <th>Verdict</th>
+              <th style="text-align:right;width:140px">Scale</th>
             </tr>
           </thead>
           <tbody id="token-body"></tbody>
@@ -902,13 +899,10 @@ function renderTokenTable(){
   document.getElementById('token-body').innerHTML = data.map(d => `
     <tr onclick="openTokenModal(tokenDeals.find(x=>x.id==='${d.id}'))">
       <td class="col-dim" style="white-space:nowrap">${d.date}</td>
-      <td><div class="col-name">${d.entity}</div></td>
+      <td><div class="col-name">${d.entity}</div><div class="col-sub">${d.sport}</div></td>
       <td><span class="badge ${d.catBadge}">${d.category}</span></td>
-      <td class="col-dim" style="font-size:11.5px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.structure}</td>
+      <td class="col-dim" style="font-size:11.5px">${d.structure}</td>
       <td style="text-align:right"><div class="col-num" style="font-size:12px">${d.scale}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${d.pct}</div></td>
-      <td class="col-dim" style="white-space:nowrap">${d.sport}</td>
-      <td><span class="badge ${d.statusBadge}">${d.status}</span></td>
-      <td style="font-size:11px;color:var(--text2);max-width:260px">${d.verdict}</td>
     </tr>`).join('');
 }
 function setTokenFilter(f,btn){

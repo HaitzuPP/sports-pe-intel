@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports Private Equity Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0c0c10; --panel:#111116; --card:#18181f; --border:#1f1f28; --border2:#2a2a38;
+  --text:#ededf0; --text2:#8b8ba0; --text3:#52525f;
+  --green:#4ade80; --green-bg:rgba(74,222,128,.1);
+  --red:#f87171;   --red-bg:rgba(248,113,113,.1);
+  --amber:#fbbf24; --amber-bg:rgba(251,191,36,.1);
+  --blue:#60a5fa;  --blue-bg:rgba(96,165,250,.1);
+  --purple:#c084fc;--purple-bg:rgba(192,132,252,.1);
+  --cyan:#22d3ee;  --cyan-bg:rgba(34,211,238,.1);
+  --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono','Menlo',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased}
+.app{display:flex;flex-direction:column;height:100vh}
+/* HEADER */
+.header{height:52px;flex-shrink:0;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid var(--border);background:var(--panel)}
+.logo{display:flex;align-items:center;gap:8px;margin-right:32px}
+.logo-dot{width:8px;height:8px;background:var(--amber);border-radius:50%}
+.logo-text{font-weight:700;font-size:14px;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.nav{display:flex;gap:2px;flex:1}
+.nav-tab{padding:6px 14px;border:none;background:none;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;transition:all .12s;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:var(--card)}
+.nav-tab.active{color:var(--text);background:var(--card);font-weight:600}
+.header-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.badge-count{font-size:11px;color:var(--text3);background:var(--card);padding:3px 8px;border-radius:4px;border:1px solid var(--border);font-weight:500}
+.clock{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:64px;text-align:right}
+/* CONTENT */
+.content{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;display:none;flex-direction:column}
+.page.active{display:flex}
+/* PAGE HEADER */
+.page-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0;flex-shrink:0}
+.page-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.page-sub{font-size:12px;color:var(--text2);margin-top:2px}
+/* FILTER PILLS */
+.pill-group{display:flex;gap:4px}
+.pill{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:none;font-family:var(--font);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .12s}
+.pill:hover{border-color:var(--border2);color:var(--text)}
+.pill.active{background:var(--card);border-color:var(--border2);color:var(--text);font-weight:600}
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat-card{background:var(--panel);padding:14px 18px}
+.stat-label{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--text);line-height:1;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.stat-val.green{color:var(--green)}.stat-val.amber{color:var(--amber)}
+.stat-chg{font-size:11px;font-weight:500}
+.stat-chg.up{color:var(--green)}.stat-chg.dn{color:var(--red)}.stat-chg.neu{color:var(--text3)}
+/* CHART CONTROLS */
+.chart-controls{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;flex-shrink:0}
+.chart-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.chart-legend{display:flex;gap:16px;align-items:center}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500}
+.leg-line{width:20px;height:2px}.leg-dot{width:8px;height:8px;border-radius:50%;border:2px solid}
+.chart-wrap{flex:1;padding:0 20px 16px;min-height:0;position:relative}
+/* SUBTABS */
+.sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px;flex-shrink:0}
+.sub-tab{padding:8px 14px;font-size:12px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;font-family:var(--font)}
+.sub-tab:hover{color:var(--text)}
+.sub-tab.active{color:var(--text);border-bottom-color:var(--amber);font-weight:600}
+/* TABLE */
+.table-controls{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;flex-shrink:0}
+.tbl-wrap{flex:1;overflow-y:auto;overflow-x:auto;padding:0 24px 24px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead{position:sticky;top:0;z-index:5;background:var(--panel)}
+th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text2)}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr{transition:background .08s;cursor:pointer}
+tbody tr:hover{background:var(--card)}
+tbody tr:last-child td{border-bottom:none}
+.col-num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+.col-name{font-weight:600;color:var(--text)}
+.col-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.col-dim{color:var(--text2)}
+.col-green{font-family:var(--mono);font-weight:600;color:var(--green);font-variant-numeric:tabular-nums}
+.col-red{font-family:var(--mono);font-weight:600;color:var(--red);font-variant-numeric:tabular-nums}
+.col-amber{font-family:var(--mono);font-weight:600;color:var(--amber);font-variant-numeric:tabular-nums}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;letter-spacing:.3px;padding:3px 7px;border-radius:4px;white-space:nowrap}
+.b-nfl{background:var(--green-bg);color:var(--green)}
+.b-nba{background:var(--amber-bg);color:var(--amber)}
+.b-epl{background:var(--purple-bg);color:var(--purple)}
+.b-seriea{background:var(--blue-bg);color:var(--blue)}
+.b-laliga{background:var(--red-bg);color:var(--red)}
+.b-ligue1{background:var(--cyan-bg);color:var(--cyan)}
+.b-multi{color:var(--text3);background:rgba(255,255,255,.06)}
+.b-full{background:var(--green-bg);color:var(--green)}
+.b-majority{background:var(--blue-bg);color:var(--blue)}
+.b-partial{background:var(--amber-bg);color:var(--amber)}
+.b-pe{background:var(--purple-bg);color:var(--purple)}
+.b-broadcast{background:var(--cyan-bg);color:var(--cyan)}
+.b-rev-sec{background:var(--amber-bg);color:var(--amber)}
+.b-failed{background:var(--red-bg);color:var(--red)}
+.b-proposed{color:var(--text3);background:rgba(255,255,255,.06)}
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:28px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;line-height:1;padding:4px}
+.modal-close:hover{color:var(--text)}
+.modal-entity{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.3px}
+.modal-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.modal-amount{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--text);margin-bottom:4px}
+.modal-prem{font-size:13px;font-weight:600;padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:18px}
+.modal-prem.pos{color:var(--green);background:var(--green-bg)}
+.modal-prem.neg{color:var(--red);background:var(--red-bg)}
+.modal-prem.neu{color:var(--text2);background:var(--card)}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.modal-field{background:var(--panel);padding:10px 12px;border-radius:6px}
+.modal-fk{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);font-weight:600;margin-bottom:4px}
+.modal-fv{font-size:12px;font-weight:600;color:var(--text);font-family:var(--mono)}
+.modal-notes{font-size:12px;color:var(--text2);line-height:1.65;padding-top:14px;border-top:1px solid var(--border)}
+.modal-source{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.modal-source a{color:var(--blue);font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.modal-source a:hover{text-decoration:underline}
+/* EURO CHART */
+.euro-chart-section{flex:1;min-height:0;padding:12px 24px 8px;display:flex;flex-direction:column}
+.euro-chart-wrap{flex:1;min-height:0;position:relative}
+.euro-footnote{font-size:10px;color:var(--text3);padding-top:6px;flex-shrink:0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
+    <nav class="nav" id="main-nav">
+      <button class="nav-tab active" data-page="market">Market</button>
+      <button class="nav-tab" data-page="franchise">Franchise Deals</button>
+      <button class="nav-tab" data-page="euro">Euro Football</button>
+      <button class="nav-tab" data-page="media">Media Rights</button>
+    </nav>
+    <div class="header-right">
+      <span class="badge-count" id="deal-count">-- deals</span>
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ══ MARKET ══ -->
+    <div class="page active" id="page-market">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">NFL Avg 2025</div><div class="stat-val green">$7.13B</div><div class="stat-chg up">+27.3% YoY</div></div>
+        <div class="stat-card"><div class="stat-label">NBA Avg 2025</div><div class="stat-val amber">$5.51B</div><div class="stat-chg up">+20.4% YoY</div></div>
+        <div class="stat-card"><div class="stat-label">Peak Deal</div><div class="stat-val">$12.8B</div><div class="stat-chg neu">Cowboys (NFL)</div></div>
+        <div class="stat-card"><div class="stat-label">NFL Combined</div><div class="stat-val">$228B</div><div class="stat-chg neu">32 franchises</div></div>
+        <div class="stat-card"><div class="stat-label">NBA Combined</div><div class="stat-val">$165B</div><div class="stat-chg neu">30 franchises</div></div>
+        <div class="stat-card"><div class="stat-label">PE Stake Cap</div><div class="stat-val">10/30%</div><div class="stat-chg neu">NFL / NBA</div></div>
+      </div>
+      <div class="chart-controls">
+        <div style="display:flex;align-items:center;gap:16px">
+          <span class="chart-label">Valuation Index 2019–2025</span>
+          <div class="pill-group" id="chart-filter">
+            <button class="pill active" onclick="setChartFilter('all',this)">All</button>
+            <button class="pill" onclick="setChartFilter('nfl',this)">NFL</button>
+            <button class="pill" onclick="setChartFilter('nba',this)">NBA</button>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-line" style="background:var(--green)"></div>NFL Avg</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>NBA Avg</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-color:#86efac"></div>NFL Deal</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--amber);border-color:#fde68a"></div>NBA Deal</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:1px dashed var(--blue)"></div>NBA PE Opens</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:1px dashed var(--red)"></div>NFL PE Opens</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
+    </div>
+
+    <!-- ══ FRANCHISE DEALS ══ -->
+    <div class="page" id="page-franchise">
+      <div class="page-top">
+        <div><div class="page-title">Franchise Deals</div><div class="page-sub">NBA and NFL equity transactions 2020–2025. Click any row for sourced deal detail.</div></div>
+      </div>
+      <div class="table-controls">
+        <div class="pill-group" id="franchise-filter">
+          <button class="pill active" onclick="setFranchiseFilter('all',this)">All (15)</button>
+          <button class="pill" onclick="setFranchiseFilter('nfl',this)">NFL (5)</button>
+          <button class="pill" onclick="setFranchiseFilter('nba',this)">NBA (10)</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th onclick="sortFranchise('year')">Year</th>
+            <th onclick="sortFranchise('franchise')">Franchise</th>
+            <th>League</th><th>Type</th>
+            <th onclick="sortFranchise('buyer')">Buyer</th>
+            <th onclick="sortFranchise('val')" style="text-align:right">Impl. Val.</th>
+            <th style="text-align:right">Stake</th>
+            <th onclick="sortFranchise('prem')" style="text-align:right">vs Lg Avg</th>
+          </tr></thead>
+          <tbody id="franchise-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ EURO FOOTBALL ══ -->
+    <div class="page" id="page-euro">
+      <div class="page-top">
+        <div><div class="page-title">European Football</div><div class="page-sub">25 deals: club equity acquisitions, league commercial rights, and valuation index 2016–2025. Click any row for sourced detail.</div></div>
+      </div>
+      <div class="sub-tabs" id="euro-subtabs">
+        <button class="sub-tab active" onclick="setEuroTab('index',this)">Price Index</button>
+        <button class="sub-tab" onclick="setEuroTab('clubs',this)">Club Equity (21)</button>
+        <button class="sub-tab" onclick="setEuroTab('leagues',this)">League Commercial (4)</button>
+      </div>
+      <!-- Price index chart -->
+      <div class="euro-chart-section" id="euro-chart-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0">
+          <span class="chart-label">Average Club Valuation by League (2016–2025, $B)</span>
+          <div class="chart-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--purple)"></div>Premier League</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--red)"></div>La Liga</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--cyan)"></div>Serie A</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--purple);border-color:#d8b4fe"></div>EPL Deal</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--red);border-color:#fca5a5"></div>La Liga / Ligue 1</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--cyan);border-color:#67e8f9"></div>Serie A</div>
+          </div>
+        </div>
+        <div class="euro-chart-wrap"><canvas id="euro-chart"></canvas></div>
+        <div class="euro-footnote">Estimates based on Sportico, Deloitte Football Money League, and Forbes annual valuations. 2020 reflects COVID-adjusted figures. Deal scatter shows implied club enterprise value at transaction date.</div>
+      </div>
+      <!-- Club / League tables -->
+      <div class="tbl-wrap" id="euro-tbl" style="display:none;padding-top:12px">
+        <table><thead id="euro-thead"></thead><tbody id="euro-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ══ MEDIA RIGHTS ══ -->
+    <div class="page" id="page-media">
+      <div class="page-top">
+        <div><div class="page-title">Media &amp; Broadcasting Rights</div><div class="page-sub">Revenue securitizations, broadcast licenses, and PE commercial stakes across global sports. Click any row for sourced detail.</div></div>
+      </div>
+      <div class="table-controls">
+        <div class="pill-group" id="media-filter">
+          <button class="pill active" onclick="setMediaFilter('all',this)">All</button>
+          <button class="pill" onclick="setMediaFilter('football',this)">Football</button>
+          <button class="pill" onclick="setMediaFilter('american',this)">US Sports</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Year</th><th>Entity</th><th>League</th><th>Investor / Buyer</th><th>Asset Type</th><th style="text-align:right">Total Value</th><th>Duration</th><th>Status</th></tr></thead>
+          <tbody id="media-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    <div id="modal-inner"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const nflAvg = [{x:2019,y:2.5},{x:2020,y:3.0},{x:2021,y:3.5},{x:2022,y:4.2},{x:2023,y:4.8},{x:2024,y:5.6},{x:2025,y:7.13}];
+const nbaAvg = [{x:2019,y:1.9},{x:2020,y:2.1},{x:2021,y:2.3},{x:2022,y:2.58},{x:2023,y:3.5},{x:2024,y:4.0},{x:2025,y:5.51}];
+
+const eplAvg   = [{x:2016,y:.70},{x:2017,y:.85},{x:2018,y:1.00},{x:2019,y:1.20},{x:2020,y:.85},{x:2021,y:1.05},{x:2022,y:1.50},{x:2023,y:1.80},{x:2024,y:2.15},{x:2025,y:2.60}];
+const laligaAvg= [{x:2016,y:.35},{x:2017,y:.42},{x:2018,y:.50},{x:2019,y:.65},{x:2020,y:.45},{x:2021,y:.55},{x:2022,y:.78},{x:2023,y:1.00},{x:2024,y:1.35},{x:2025,y:1.75}];
+const serieaAvg= [{x:2016,y:.22},{x:2017,y:.28},{x:2018,y:.35},{x:2019,y:.45},{x:2020,y:.30},{x:2021,y:.42},{x:2022,y:.58},{x:2023,y:.75},{x:2024,y:.95},{x:2025,y:1.25}];
+
+const franchiseDeals = [
+  {id:1, year:2020,xp:2020.0,franchise:'Utah Jazz',league:'NBA',badge:'b-nba',typeLabel:'Majority',typeBadge:'b-majority',buyer:'Ryan Smith (Qualtrics)',val:1.66,currency:'$',stake:'80%',lgAvg:2.10,prem:-21.0,source:'https://www.sportico.com/business/sales/2020/utah-jazz-sale-ryan-smith-1234612100/',notes:'Miller family ends 35-year ownership. Ryan Smith buys 80% at $1.66B implied. Arctos Sports Partners subsequently acquires a minority PE stake within 12 months, setting the stage for Arctos\'s broader sports expansion.'},
+  {id:2, year:2021,xp:2021.0,franchise:'Utah Jazz',league:'NBA',badge:'b-nba',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Arctos Partners',val:1.80,currency:'$',stake:'Minority',lgAvg:2.30,prem:-21.7,source:'https://www.sportico.com/business/finance/2021/arctos-sports-partners-nba-1234621000/',notes:'Arctos acquires minority stake in the Jazz within the restructured Ryan Smith ownership. First major NBA PE deployment for Arctos, which becomes the most active multi-league sports PE investor globally.'},
+  {id:3, year:2021,xp:2021.2,franchise:'Minnesota Timberwolves',league:'NBA',badge:'b-nba',typeLabel:'Ctrl. Sale',typeBadge:'b-majority',buyer:'Lore / Rodriguez',val:1.50,currency:'$',stake:'Majority',lgAvg:2.30,prem:-34.8,source:'https://www.espn.com/nba/story/_/id/45577217/nba-owners-approve-15-billion-sale-wolves-wnba-lynx',notes:'Phased deal agreed with Glen Taylor at $1.5B. Blue Owl Capital among limited partners. NBA approved controlling transfer Jan 2025 after prolonged arbitration. Price locked in 2021 represents a 73% discount to 2025 NBA avg — one of the worst structured terms in recent sports M&A.'},
+  {id:4, year:2022,xp:2022.0,franchise:'Phoenix Suns',league:'NBA',badge:'b-nba',typeLabel:'Full Acq.',typeBadge:'b-full',buyer:'Mat Ishbia (UWM)',val:4.00,currency:'$',stake:'100%',lgAvg:2.58,prem:55.0,source:'https://www.sportico.com/business/sales/2023/phoenix-suns-mat-ishbia-1234697102/',notes:'Announced Dec 2022, NBA owners approved Feb 2023. Largest NBA full-franchise sale at time of close. +55% premium to league avg signals the market was materially underpricing franchise optionality on the incoming $76B TV deal.'},
+  {id:5, year:2023,xp:2023.0,franchise:'Charlotte Hornets',league:'NBA',badge:'b-nba',typeLabel:'Majority',typeBadge:'b-majority',buyer:'Plotkin / Schnall',val:3.00,currency:'$',stake:'Majority',lgAvg:3.50,prem:-14.3,source:'https://www.sportico.com/leagues/basketball/2023/michael-jordan-charlotte-hornets-sale-approved-by-nba-1234731858/',notes:'Michael Jordan exits after 13-year majority ownership. Slight discount to league avg reflects Charlotte\'s small market. NBA approved July 2023. Jordan retains a minority stake.'},
+  {id:6, year:2023,xp:2023.25,franchise:'Dallas Mavericks',league:'NBA',badge:'b-nba',typeLabel:'Ctrl. Sale',typeBadge:'b-majority',buyer:'Adelson / Dumont',val:3.50,currency:'$',stake:'Controlling',lgAvg:3.50,prem:0.0,source:'https://www.cnbc.com/2023/11/28/miriam-adelson-las-vegas-sands-stock-sale-sports-team.html',notes:'Mark Cuban sells controlling interest to Miriam Adelson (Las Vegas Sands) and Patrick Dumont at exactly the NBA league average. Cuban told ESPN in 2025 he regrets the buyer. Dumont serves as Mavs governor.'},
+  {id:7, year:2024,xp:2024.0,franchise:'Los Angeles Lakers',league:'NBA',badge:'b-nba',typeLabel:'Majority',typeBadge:'b-majority',buyer:'Mark Walter',val:10.00,currency:'$',stake:'Majority',lgAvg:4.00,prem:150.0,source:'https://www.cbssports.com/nba/news/lakers-top-list-of-most-expensive-team-sales-in-u-s-pro-sports-history-with-10-billion-valuation/',notes:'All-time global sports record at deal date. 2.5x NBA league average. Buss family estate sale triggers the process. Walter also owns Chelsea FC and LA Dodgers, building a globally diversified multi-sport institutional platform.'},
+  {id:8, year:2024,xp:2024.2,franchise:'Milwaukee Bucks',league:'NBA',badge:'b-nba',typeLabel:'Minority',typeBadge:'b-pe',buyer:'Junior Bridgeman',val:4.00,currency:'$',stake:'10%',lgAvg:4.00,prem:0.0,source:'https://www.cnbc.com/2024/09/12/junior-bridgeman-buying-stake-in-milwaukee-bucks-team-valued-at-4-billion.html',notes:'Former Bucks player acquires 10% at exactly the $4B NBA avg implied valuation. Bridgeman operates a $1B+ restaurant franchise empire. Sportico confirmed $4B team valuation at time of deal.'},
+  {id:9, year:2025,xp:2025.0,franchise:'Boston Celtics',league:'NBA',badge:'b-nba',typeLabel:'Full Acq.',typeBadge:'b-full',buyer:'Chisholm / Sixth Street',val:6.10,currency:'$',stake:'100%',lgAvg:5.51,prem:10.7,source:'https://www.sportico.com/business/team-sales/2025/bill-chisholm-celtics-sale-6-1-billion-1234843982/',notes:'Agreed March 2025, NBA approved Aug 2025 at $6.1B. Consortium includes Sixth Street Partners. Wyc Grousbeck-led group exits after 25 years.'},
+  {id:10,year:2025,xp:2025.2,franchise:'Golden State Warriors',league:'NBA',badge:'b-nba',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Institutional Consortium',val:11.33,currency:'$',stake:'Up to 30%',lgAvg:5.51,prem:105.6,source:'https://www.sportico.com/valuations/teams/2025/nba-team-values-2025-warriors-lakers-knicks-1234873773/',notes:'Fifth consecutive year atop Sportico NBA rankings. Only Cowboys ranks higher globally. Chase Center ownership included. 30% NBA PE cap implies max institutional equity of $3.4B.'},
+  {id:11,year:2022,xp:2022.1,franchise:'Denver Broncos',league:'NFL',badge:'b-nfl',typeLabel:'Full Acq.',typeBadge:'b-full',buyer:'Walton-Penner Group',val:6.20,currency:'$',stake:'100%',lgAvg:4.20,prem:47.6,source:'https://www.sportico.com/business/sales/2022/denver-broncos-sale-walton-penner-1234676000/',notes:'NFL record at close. Rob Walton (Walmart heir) leads consortium. Resets the entire franchise comp universe and anchors every subsequent NFL PE minority stake negotiation.'},
+  {id:12,year:2023,xp:2023.1,franchise:'Washington Commanders',league:'NFL',badge:'b-nfl',typeLabel:'Full Acq.',typeBadge:'b-full',buyer:'Josh Harris Group',val:6.05,currency:'$',stake:'100%',lgAvg:4.80,prem:26.0,source:'https://www.sportico.com/business/sales/2023/washington-commanders-josh-harris-1234709000/',notes:'Dan Snyder exits after 24 years. Harris brings credibility from 76ers and Flyers ownership. Deal closes within 12 months of the Broncos record, demonstrating how quickly NFL comps reprice.'},
+  {id:13,year:2024,xp:2023.9,franchise:'Buffalo Bills',league:'NFL',badge:'b-nfl',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Arctos Partners',val:5.80,currency:'$',stake:'~8%',lgAvg:5.60,prem:3.6,source:'https://fortune.com/2025/01/22/private-equity-investing-nfl-buffalo-bills-miami-dolphins/',notes:'First NFL PE deal post-Aug 2024 rule change. Passive minority, no governance rights. Templates the 10%-cap structure for the remaining 31 NFL franchises.'},
+  {id:14,year:2024,xp:2024.15,franchise:'LA Chargers',league:'NFL',badge:'b-nfl',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Arctos Partners',val:5.50,currency:'$',stake:'~8%',lgAvg:5.60,prem:-1.8,source:'https://fortune.com/2025/01/22/private-equity-investing-nfl-buffalo-bills-miami-dolphins/',notes:'Undisclosed valuation; estimated at NFL avg. Arctos deploys into a second NFL team in the same cycle. Spanos family retains full operational control.'},
+  {id:15,year:2025,xp:2024.9,franchise:'Dallas Cowboys',league:'NFL',badge:'b-nfl',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Approved PE Consortium',val:12.80,currency:'$',stake:'Up to 10%',lgAvg:7.13,prem:79.5,source:'https://www.sportico.com/valuations/teams/2025/nfl-team-values-2025-dallas-cowboys-billion-1234866760/',notes:'Most valuable franchise in North America. PE entry at 1.79x NFL avg. Jerry Jones retains full operational control. Max PE equity per approved firm at 10% cap: $1.28B.'},
+];
+
+const euroDeals = [
+  // Club equity (id e1-e21)
+  {id:'e1', year:2016,xp:2016.0,impliedVal:.40, club:'Wolverhampton Wanderers',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Fosun International',type:'Full Acq.',typeBadge:'b-full',amount:'£45M initial',stake:'15% → control',source:'https://www.bbc.com/sport/football/37378940',notes:'Fosun acquires 15% from Championship club for £45M in 2016. Expands to majority by 2021. Wolves are promoted to Premier League in 2018, materially increasing asset value. Represents early-wave Chinese institutional interest in European football.'},
+  {id:'e2', year:2019,xp:2019.0,impliedVal:.11, club:'OGC Nice',country:'France',league:'Ligue 1',leagueBadge:'b-ligue1',investor:'INEOS (Jim Ratcliffe)',type:'Full Acq.',typeBadge:'b-full',amount:'~€100M',stake:'100%',source:'https://www.bbc.com/sport/football/49053382',notes:'Ratcliffe acquires Nice for ~€100M. INEOS strategy: affordable entry into major European leagues. Ratcliffe later acquires 27.7% of Manchester United in 2023 for £1.26B, creating a multi-club INEOS portfolio (Nice, Man Utd, FC Lausanne). INEOS is now exploring the sale of Nice at ~€200-250M.'},
+  {id:'e3', year:2019,xp:2019.2,impliedVal:5.0, club:'City Football Group',country:'Multi-club',league:'Man City + 11 clubs',leagueBadge:'b-multi',investor:'Silver Lake Partners',type:'Partial',typeBadge:'b-partial',amount:'$500M',stake:'10%',source:'https://frontofficesports.com/city-football-group-silver-lake-500-million/',notes:'Silver Lake buys 10% of CFG at a $4.8B group valuation. CFG operates Manchester City, NYCFC, Melbourne City, Yokohama F. Marinos, and several others. Silver Lake increases position in 2023 to ~17% with an additional $500M investment.'},
+  {id:'e4', year:2020,xp:2020.0,impliedVal:.75, club:'AS Roma',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'Friedkin Group',type:'Majority',typeBadge:'b-majority',amount:'€591M',stake:'87%',source:'https://www.sportico.com/business/sales/2020/as-roma-sold-friedkin-group-1234612694/',notes:'Dan Friedkin\'s Texas-based group acquires 87% of Roma for €591M from James Pallotta. Friedkin Group subsequently acquires Everton FC in Dec 2024 for £400M+, building a two-club European PE portfolio. Also holds a stake in Everton\'s new Bramley-Moore Dock stadium debt.'},
+  {id:'e5', year:2020,xp:2020.2,impliedVal:.30, club:'Burnley FC',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'ALK Capital (US PE)',type:'Majority',typeBadge:'b-majority',amount:'~£200M',stake:'84%',source:'https://www.bbc.com/sport/football/54785804',notes:'US PE firm ALK Capital (via Velocity Sports Partners) acquires 84% of Burnley at a Premier League valuation. One of the first direct US PE acquisitions of an English top-flight club, pre-dating the wave of American investment that accelerated from 2022.'},
+  {id:'e6', year:2021,xp:2021.0,impliedVal:.50, club:'Newcastle United',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Saudi PIF + Amanda Staveley + Reuben Brothers',type:'Majority',typeBadge:'b-majority',amount:'£305M',stake:'80%',source:'https://www.bbc.com/sport/football/58823217',notes:'Saudi PIF (80%), PCP Capital (10%), Reuben Brothers (10%) complete £305M acquisition. Instantly transforms Newcastle into one of the most cash-rich clubs in world football. Mike Ashley exits after 14 years of cost-focused ownership.'},
+  {id:'e7', year:2021,xp:2021.15,impliedVal:.025,club:'Toulouse FC',country:'France',league:'Ligue 2',leagueBadge:'b-ligue1',investor:'RedBird Capital Partners',type:'Full Acq.',typeBadge:'b-full',amount:'~€25M',stake:'100%',source:'https://www.sportico.com/leagues/soccer/2021/toulouse-fc-redbird-capital-1234621421/',notes:'RedBird acquires Toulouse from Ligue 2 for ~€25M. Promoted to Ligue 1 in 2022. Becomes a talent pipeline connecting to AC Milan (also RedBird). Now exploring a ~€50-70M sale as part of RedBird\'s European portfolio management.'},
+  {id:'e8', year:2021,xp:2021.3,impliedVal:4.0, club:'Liverpool FC (via FSG)',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'RedBird Capital Partners',type:'Partial (FSG)',typeBadge:'b-partial',amount:'£533M',stake:'~11% of FSG',source:'https://thisisanfield.com/2021/04/fsgs-investment-deal-sees-liverpools-valuation-rise-above-4-billion/',notes:'RedBird invests £533M into Fenway Sports Group (Liverpool\'s parent) at a >$7B FSG valuation, implying Liverpool equity at ~$4B+. An 88% valuation increase from prior benchmarks. RedBird brings sports portfolio synergies via Toulouse and AC Milan.'},
+  {id:'e9', year:2022,xp:2022.0,impliedVal:5.3, club:'Chelsea FC',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Clearlake Capital + Todd Boehly',type:'Full Acq.',typeBadge:'b-full',amount:'$5.3B',stake:'100% (Clearlake 60%)',source:'https://www.sportico.com/business/sales/2022/chelsea-fc-sold-clearlake-boehly-1234676319/',notes:'Roman Abramovich forced sale following UK sanctions. $3.1B for the club plus $2.2B committed to stadium and operations. Clearlake holds 60% of BlueCo. Largest European football deal on record.'},
+  {id:'e10',year:2022,xp:2022.2,impliedVal:1.33,club:'AC Milan',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'RedBird Capital Partners',type:'Full Acq.',typeBadge:'b-full',amount:'€1.2B',stake:'100%',source:'https://www.sportico.com/business/sales/2022/ac-milan-sale-redbird-capital-1234676529/',notes:'PE-to-PE sale: RedBird buys from Elliott Management, which itself acquired the club via a debt default from Yonghong Li. RedBird links Toulouse as a feeder club for AC Milan\'s talent pipeline.'},
+  {id:'e11',year:2022,xp:2022.4,impliedVal:.38, club:'Atalanta BC',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'Bain Capital',type:'Majority',typeBadge:'b-majority',amount:'€275M',stake:'Controlling',source:'https://www.sportico.com/business/sales/2022/atalanta-bain-capital-acquisition-1234676320/',notes:'Bain acquires controlling stake from the Percassi family. Atalanta consistently qualify for European competition on a fraction of the Milan clubs\' budgets. Arctos subsequently takes a small minority alongside Bain in 2023. Atalanta won the 2023-24 Europa League.'},
+  {id:'e12',year:2022,xp:2022.6,impliedVal:.14, club:'Southampton FC',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Sport Republic',type:'Majority',typeBadge:'b-majority',amount:'~£90M',stake:'~80%',source:'https://www.bbc.com/sport/football/59966068',notes:'Sport Republic (backed by Serbian billionaire Dragan Solak) acquires ~80% for ~£90M. Southampton subsequently relegated to Championship in 2023. Illustrates relegation risk in Premier League PE investments absent promotion/relegation parachute protections.'},
+  {id:'e13',year:2023,xp:2023.0,impliedVal:.49, club:'Leeds United',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'49ers Enterprises',type:'Partial',typeBadge:'b-partial',amount:'£173M',stake:'44%',source:'https://www.sportico.com/business/sales/2023/leeds-united-49ers-enterprises-1234709870/',notes:'49ers Enterprises acquires 44% for £173M at an implied £394M club valuation. Leeds were relegated from the Premier League weeks after deal close, materially affecting asset value. Deal reportedly included waterfall mechanics to address relegation risk.'},
+  {id:'e14',year:2023,xp:2023.15,impliedVal:1.10,club:'Olympique Lyonnais',country:'France',league:'Ligue 1',leagueBadge:'b-ligue1',investor:'Eagle Football (John Textor)',type:'Majority',typeBadge:'b-majority',amount:'~€800M',stake:'77.5%',source:'https://www.sportico.com/business/sales/2023/john-textor-lyon-1234709200/',notes:'John Textor\'s Eagle Football Holdings acquires 77.5% of OL Groupe (Lyon\'s parent) for ~€800M. Textor operates Crystal Palace (EPL, 25%), RWD Molenbeek (Belgium), and Botafogo (Brazil). Lyon is a key anchor asset in his multi-club model.'},
+  {id:'e15',year:2023,xp:2023.3,impliedVal:5.80,club:'Manchester United',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'INEOS (Jim Ratcliffe)',type:'Partial',typeBadge:'b-partial',amount:'£1.26B',stake:'27.7%',source:'https://www.bbc.com/sport/football/64919560',notes:'INEOS pays £1.26B for 27.7% of Manchester United at an implied ~£4.55B club value. Ratcliffe gains control of sporting operations while the Glazer family retains financial ownership. Creates INEOS multi-club portfolio (Man Utd, Nice, FC Lausanne-Sport).'},
+  {id:'e16',year:2023,xp:2023.45,impliedVal:5.0, club:'City Football Group',country:'Multi-club',league:'Man City + 13 clubs',leagueBadge:'b-multi',investor:'Silver Lake Partners',type:'Partial',typeBadge:'b-partial',amount:'$500M add\'l',stake:'~17% total',source:'https://frontofficesports.com/city-football-group-silver-lake-500-million/',notes:'Silver Lake increases CFG stake from 10% to ~17% with a further $500M, as group value rises following Manchester City\'s treble in 2022-23.'},
+  {id:'e17',year:2023,xp:2023.6,impliedVal:4.50,club:'Liverpool FC (via FSG)',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Dynasty Equity Partners',type:'Partial (FSG)',typeBadge:'b-partial',amount:'~$200M',stake:'Minority',source:'https://frontofficesports.com/fsg-sells-200m-liverpool-stake-to-private-equity-firm/',notes:'FSG sells ~$200M stake to Dynasty Equity (one of the NFL-approved PE firms), implying Liverpool equity at ~$4.5B. Reflects continued institutional appetite for premium sports franchises at any available entry point.'},
+  {id:'e18',year:2023,xp:2023.75,impliedVal:.60, club:'Atalanta BC',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'Arctos Sports Partners',type:'Minority',typeBadge:'b-pe',amount:'~$36M',stake:'Small minority',source:'https://www.sportico.com/business/sales/2023/arctos-atalanta-1234713970/',notes:'Arctos takes a small minority alongside Bain Capital. Arctos expanding European football exposure as part of its global multi-sport, multi-league strategy.'},
+  {id:'e19',year:2024,xp:2024.0,impliedVal:1.00, club:'Inter Milan',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'Oaktree Capital Management',type:'Debt to Equity',typeBadge:'b-pe',amount:'€395M (loan)',stake:'100%',source:'https://www.sportico.com/business/sales/2024/inter-milan-oaktree-capital-1234741295/',notes:'Oaktree seizes control after Zhang family defaults on a €395M loan. Debt-to-equity conversion, not a market transaction. Oaktree seeking a buyer at a reported €1B+ implied valuation. Illustrates loan-to-own PE strategy in football.'},
+  {id:'e20',year:2024,xp:2024.2,impliedVal:.55, club:'Everton FC',country:'England',league:'Premier League',leagueBadge:'b-epl',investor:'Friedkin Group',type:'Majority',typeBadge:'b-majority',amount:'£400M+ (inc. debt)',stake:'Majority',source:'https://www.bbc.com/sport/football/67859040',notes:'Friedkin Group (also owner of AS Roma) completes the Everton takeover in December 2024. Enterprise value approaches £1B when including assumed debt, working capital, and new Bramley-Moore Dock stadium costs. Friedkin becomes the 10th US owner in the Premier League.'},
+  {id:'e21',year:2025,xp:2025.0,impliedVal:.20, club:'Hellas Verona',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'Presidio Investors (US PE)',type:'Full Acq.',typeBadge:'b-full',amount:'Undisclosed',stake:'Controlling',source:'https://pe-insights.com/private-equity-fuels-surge-in-european-soccer-as-us-investors-drive-23-7bn-market/',notes:'Presidio Investors acquires controlling interest in Hellas Verona, the standout deal in the early-2025 European M&A cycle. Continues US PE expansion into Serie A beyond the marquee Milan clubs.'},
+  // League commercial (id l1-l4)
+  {id:'l1', year:2021,xp:null,impliedVal:null,club:'La Liga (Boost LaLiga)',country:'Spain',league:'La Liga',leagueBadge:'b-laliga',investor:'CVC Capital Partners',type:'Commercial Rights',typeBadge:'b-broadcast',amount:'€1.994B',stake:'8.2% for 50 yrs',source:'https://frontofficesports.com/la-liga-agrees-to-3-2b-investment-from-cvc/',notes:'CVC acquires 8.2% of Boost LaLiga — the commercial entity covering broadcast and sponsorship revenues — for 50 years. Largest PE investment in European football at time of close. Real Madrid, Barcelona, and Athletic Bilbao opted out to preserve their independent commercial upside.'},
+  {id:'l2', year:2022,xp:null,impliedVal:null,club:'FC Barcelona (LaLiga TV)',country:'Spain',league:'La Liga',leagueBadge:'b-laliga',investor:'Sixth Street Partners',type:'Rev. Securitization',typeBadge:'b-rev-sec',amount:'€507M total',stake:'25% of 25yr TV rights',source:'https://sixthstreet.com/investment_announce/fc-barcelona-and-sixth-street-reach-an-agreement-for-the-acquisition-of-a-10-share-of-the-clubs-laliga-tv-rights/',notes:'Two tranches in summer 2022. Tranche 1 (June 2022): €207.5M for 10% of LaLiga broadcast income. Tranche 2 (July 2022): ~€300M for additional 15%. Barcelona labelled these as "economic levers" to fund player signings following COVID financial damage and FFP constraints.'},
+  {id:'l3', year:2022,xp:null,impliedVal:null,club:'Ligue 1 (LFP Media)',country:'France',league:'Ligue 1',leagueBadge:'b-ligue1',investor:'CVC Capital Partners',type:'Commercial Rights',typeBadge:'b-broadcast',amount:'€1.66B',stake:'13% for 50 yrs',source:'https://pitchbook.com/news/articles/private-equity-media-rights-french-football-ligue1',notes:'CVC replicates the La Liga playbook in France, acquiring 13% of LFP\'s commercial subsidiary for €1.66B. Mirrors infrastructure PE rather than traditional sports ownership. Funds distributed to participating clubs.'},
+  {id:'l4', year:2021,xp:null,impliedVal:null,club:'Serie A (proposed)',country:'Italy',league:'Serie A',leagueBadge:'b-seriea',investor:'CVC / Advent / FSI',type:'FAILED',typeBadge:'b-failed',amount:'€1.7B (proposed)',stake:'10% proposed',source:'https://www.sportico.com/leagues/soccer/2021/serie-a-cvc-deal-dead-1234625987/',notes:'Consortium offered €1.7B for 10% of a new Serie A media rights entity. Collapsed when 13 clubs voted to block it, failing the two-thirds supermajority. No league-level PE deal in Serie A has been executed since. The governance failure leaves Italian football structurally underfunded vs. La Liga and Ligue 1 peers.'},
+];
+
+const mediaDeals = [
+  {id:'m1',year:2022,sport:'football',entity:'FC Barcelona',league:'La Liga',investor:'Sixth Street Partners',type:'Rev. Securitization',typeBadge:'b-rev-sec',value:'€507M total',duration:'25 years',status:'Active',statusBadge:'b-full',source:'https://sixthstreet.com/investment_announce/fc-barcelona-and-sixth-street-reach-an-agreement-for-the-acquisition-of-a-10-share-of-the-clubs-laliga-tv-rights/',notes:'Two tranches: €207.5M for 10% (June 2022) then ~€300M for additional 15% (July 2022). Total: ~€507M for 25% of Barcelona\'s LaLiga broadcast income for 25 years. Note: the user referenced a "2020" date — the deal was executed in summer 2022.'},
+  {id:'m2',year:2022,sport:'football',entity:'Real Madrid (Bernabeu)',league:'La Liga',investor:'Sixth Street Partners',type:'Stadium Rev. Sec.',typeBadge:'b-rev-sec',value:'$380M',duration:'Long-term',status:'Active',statusBadge:'b-full',source:'https://www.sportico.com/leagues/soccer/2022/real-madrid-sixth-street-bernabeu-deal-1234676000/',notes:'30% of revenue from the renovated Santiago Bernabeu. Not club equity. Securitized against matchday, hospitality, and event income from the ~€1.5B renovation.'},
+  {id:'m3',year:2021,sport:'football',entity:'La Liga (Boost LaLiga)',league:'La Liga',investor:'CVC Capital Partners',type:'PE Commercial Stake',typeBadge:'b-pe',value:'€1.994B',duration:'50 years',status:'Active',statusBadge:'b-full',source:'https://frontofficesports.com/la-liga-agrees-to-3-2b-investment-from-cvc/',notes:'8.2% of all La Liga commercial and broadcast revenues for 50 years. Big three opted out. Funds distributed to 37 participating clubs.'},
+  {id:'m4',year:2022,sport:'football',entity:'Ligue 1 (LFP Media)',league:'Ligue 1',investor:'CVC Capital Partners',type:'PE Commercial Stake',typeBadge:'b-pe',value:'€1.66B',duration:'50 years',status:'Active',statusBadge:'b-full',source:'https://pitchbook.com/news/articles/private-equity-media-rights-french-football-ligue1',notes:'13% of LFP\'s commercial subsidiary. Mirrors the La Liga template. Funds flow to clubs for stadium upgrades.'},
+  {id:'m5',year:2021,sport:'football',entity:'Serie A (proposed)',league:'Serie A',investor:'CVC / Advent / FSI',type:'PE Commercial Stake',typeBadge:'b-proposed',value:'€1.7B proposed',duration:'N/A',status:'Failed',statusBadge:'b-failed',source:'https://www.sportico.com/leagues/soccer/2021/serie-a-cvc-deal-dead-1234625987/',notes:'10% stake in a proposed Serie A media rights entity. Blocked by 13 clubs failing the required supermajority.'},
+  {id:'m6',year:2023,sport:'american',entity:'NFL',league:'NFL',investor:'Fox, CBS, NBC, ESPN, Amazon',type:'Broadcast License',typeBadge:'b-broadcast',value:'$110B total',duration:'10 yrs (2023-2033)',status:'Active',statusBadge:'b-full',source:'https://www.cnbc.com/2025/09/04/cnbcs-official-nfl-team-valuations-2025.html',notes:'~$11B annually across five broadcasters. Amazon holds exclusive Thursday Night Football — first major US sports package assigned exclusively to a streaming platform. Largest broadcast contract in sports history.'},
+  {id:'m7',year:2025,sport:'american',entity:'NBA',league:'NBA',investor:'Amazon, NBC, ESPN',type:'Broadcast License',typeBadge:'b-broadcast',value:'$76B total',duration:'11 yrs (2025-2036)',status:'Active',statusBadge:'b-full',source:'https://www.sportico.com/leagues/basketball/2025/nba-revenue-projected-2025-26-season-1234876505/',notes:'2.6x increase from prior Turner/ESPN package. Amazon and NBC debut as rights holders. Generates ~$200M per team annually — the primary driver of NBA franchise avg surpassing $5.5B in 2025.'},
+  {id:'m8',year:2024,sport:'football',entity:'Premier League',league:'Premier League',investor:'Sky Sports, TNT Sports, Amazon',type:'Broadcast License (UK)',typeBadge:'b-broadcast',value:'£6.7B',duration:'4 yrs (2025-2029)',status:'Active',statusBadge:'b-full',source:'https://insidersport.com/2025/06/16/premier-league-revenues-europe-deloitt/',notes:'UK domestic rights at £6.7B. International rights estimated at an additional $9B+ over the same period. Premier League is by far the most commercially valuable football competition globally.'},
+  {id:'m9',year:2022,sport:'football',entity:'Serie A',league:'Serie A',investor:'DAZN / Sky Italy',type:'Broadcast License',typeBadge:'b-broadcast',value:'€900M/yr',duration:'3 yrs (2021-2024)',status:'Expired',statusBadge:'b-proposed',source:'https://www.footitalia.com/news/serie-a-tv-rights-stake/',notes:'DAZN acquires 7 of 10 match packages. DAZN significantly underperformed subscriber targets, creating renegotiation pressure mid-contract. Illustrates streaming rights overvaluation risk.'},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let chartFilter='all', franchiseFilter='all', mediaFilter='all', euroTab='index';
+let mainChart=null, euroChart=null;
+let franchiseSort={col:'year',dir:-1};
+
+// ── DEAL COUNT ───────────────────────────────────────────────────────────────
+const totalDeals = franchiseDeals.length + euroDeals.length + mediaDeals.length;
+document.getElementById('deal-count').textContent = totalDeals + ' deals tracked';
+
+// ── NAV ──────────────────────────────────────────────────────────────────────
+document.getElementById('main-nav').addEventListener('click', e=>{
+  if(!e.target.dataset.page) return;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('page-'+e.target.dataset.page).classList.add('active');
+  if(e.target.dataset.page==='market' && mainChart) setTimeout(()=>mainChart.resize(),50);
+  if(e.target.dataset.page==='euro' && euroTab==='index' && euroChart) setTimeout(()=>euroChart.resize(),50);
+});
+
+// ── CHART PLUGINS ────────────────────────────────────────────────────────────
+const pePlugin = {
+  id:'peLine',
+  afterDraw(ch){
+    const {ctx,chartArea,scales}=ch; if(!scales.x) return;
+    const drawLine=(xVal,color,label1,label2)=>{
+      const xPx=scales.x.getPixelForValue(xVal);
+      ctx.save();
+      ctx.setLineDash([3,5]); ctx.strokeStyle=color; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(xPx,chartArea.top); ctx.lineTo(xPx,chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle=color;
+      ctx.font="bold 9px Inter,system-ui,sans-serif";
+      ctx.fillText(label1,xPx+5,chartArea.top+13);
+      ctx.fillText(label2,xPx+5,chartArea.top+24);
+      ctx.restore();
+    };
+    drawLine(2020,'rgba(96,165,250,.55)','NBA PE','OPENS');
+    drawLine(2024,'rgba(248,113,113,.45)','NFL PE','OPENS');
+  }
+};
+
+const euroPlugin = {
+  id:'euroLine',
+  afterDraw(ch){
+    const {ctx,chartArea,scales}=ch; if(!scales.x) return;
+    const drawLine=(xVal,color,label)=>{
+      const xPx=scales.x.getPixelForValue(xVal);
+      ctx.save();
+      ctx.setLineDash([3,5]); ctx.strokeStyle=color; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(xPx,chartArea.top); ctx.lineTo(xPx,chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle=color;
+      ctx.font="bold 8.5px Inter,system-ui,sans-serif";
+      ctx.fillText(label,xPx+4,chartArea.top+12);
+      ctx.restore();
+    };
+    drawLine(2022,'rgba(248,113,113,.35)','Chelsea $5.3B');
+    drawLine(2020,'rgba(255,255,255,.12)','COVID');
+  }
+};
+
+// ── MAIN CHART ───────────────────────────────────────────────────────────────
+function buildMainDatasets(){
+  const sn=chartFilter!=='nba', sb=chartFilter!=='nfl';
+  const nflPts=franchiseDeals.filter(t=>t.league==='NFL').map(t=>({x:t.xp,y:t.val,id:t.id}));
+  const nbaPts=franchiseDeals.filter(t=>t.league==='NBA').map(t=>({x:t.xp,y:t.val,id:t.id}));
+  return[
+    {label:'NFL Avg',type:'line',data:sn?nflAvg:[],borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.05)',fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#4ade80',order:3},
+    {label:'NBA Avg',type:'line',data:sb?nbaAvg:[],borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.05)',borderDash:[6,3],fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#fbbf24',order:3},
+    {label:'NFL Deal',type:'scatter',data:sn?nflPts:[],backgroundColor:'#4ade80',borderColor:'#86efac',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
+    {label:'NBA Deal',type:'scatter',data:sb?nbaPts:[],backgroundColor:'#fbbf24',borderColor:'#fde68a',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
+  ];
+}
+function initMainChart(){
+  const ctx=document.getElementById('main-chart').getContext('2d');
+  mainChart=new Chart(ctx,{
+    type:'scatter',data:{datasets:buildMainDatasets()},plugins:[pePlugin],
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      scales:{
+        x:{type:'linear',min:2019.3,max:2025.7,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#52525f',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#1f1f28'},border:{color:'#1f1f28'}},
+        y:{min:0,max:14,ticks:{callback:v=>'$'+v+'B',color:'#52525f',font:{family:'JetBrains Mono,monospace',size:10}},grid:{color:'#1f1f28'},border:{color:'#1f1f28'}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#18181f',borderColor:'#2a2a38',borderWidth:1,titleColor:'#ededf0',bodyColor:'#8b8ba0',padding:12,
+          titleFont:{family:'Inter,system-ui,sans-serif',size:12,weight:'600'},
+          bodyFont:{family:'JetBrains Mono,monospace',size:11},
+          callbacks:{
+            title(items){const i=items[0];if(i.dataset.label==='NFL Deal'||i.dataset.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===i.raw.id);return t?t.franchise:i.dataset.label;}return i.dataset.label;},
+            label(i){if(i.dataset.label==='NFL Deal'||i.dataset.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===i.raw.id);if(t)return['$'+t.val+'B  |  '+t.year,'Buyer: '+t.buyer,'Stake: '+t.stake,(t.prem>=0?'+':'')+t.prem.toFixed(1)+'% vs lg avg'];}return '$'+i.raw.y.toFixed(2)+'B';}
+          }
+        }
+      },
+      onClick(evt,els){if(!els.length)return;const e=els[0];const ds=mainChart.data.datasets[e.datasetIndex];if(ds.label==='NFL Deal'||ds.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===ds.data[e.index].id);if(t)openFranchiseModal(t);}},
+      onHover(evt,els){evt.native.target.style.cursor=els.length?'pointer':'default';}
+    }
+  });
+}
+function setChartFilter(f,btn){
+  chartFilter=f;
+  document.querySelectorAll('#chart-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  mainChart.data.datasets=buildMainDatasets();
+  mainChart.update();
+}
+
+// ── EURO CHART ───────────────────────────────────────────────────────────────
+function initEuroChart(){
+  if(euroChart) return;
+  const ctx=document.getElementById('euro-chart').getContext('2d');
+  // Deal scatter: EPL, LaLiga/Ligue1, Serie A dots
+  const eplPts  =euroDeals.filter(d=>d.xp&&d.impliedVal&&(d.leagueBadge==='b-epl'||d.leagueBadge==='b-multi')).map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  const laligaPts=euroDeals.filter(d=>d.xp&&d.impliedVal&&(d.leagueBadge==='b-laliga'||d.leagueBadge==='b-ligue1')).map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  const seriePts =euroDeals.filter(d=>d.xp&&d.impliedVal&&d.leagueBadge==='b-seriea').map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  euroChart=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Premier League Avg',type:'line',data:eplAvg,borderColor:'#c084fc',backgroundColor:'rgba(192,132,252,.05)',fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#c084fc',order:3},
+      {label:'La Liga Avg',type:'line',data:laligaAvg,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.04)',borderDash:[6,3],fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#f87171',order:3},
+      {label:'Serie A Avg',type:'line',data:serieaAvg,borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.04)',borderDash:[4,4],fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#22d3ee',order:3},
+      {label:'EPL / Multi-club Deal',type:'scatter',data:eplPts,backgroundColor:'#c084fc',borderColor:'#d8b4fe',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+      {label:'La Liga / Ligue 1 Deal',type:'scatter',data:laligaPts,backgroundColor:'#f87171',borderColor:'#fca5a5',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+      {label:'Serie A Deal',type:'scatter',data:seriePts,backgroundColor:'#22d3ee',borderColor:'#67e8f9',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+    ]},
+    plugins:[euroPlugin],
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      scales:{
+        x:{type:'linear',min:2015.8,max:2025.5,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#52525f',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#1f1f28'},border:{color:'#1f1f28'}},
+        y:{min:0,max:6.5,ticks:{callback:v=>'$'+v+'B',color:'#52525f',font:{family:'JetBrains Mono,monospace',size:10}},grid:{color:'#1f1f28'},border:{color:'#1f1f28'}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#18181f',borderColor:'#2a2a38',borderWidth:1,titleColor:'#ededf0',bodyColor:'#8b8ba0',padding:10,
+          titleFont:{family:'Inter,system-ui,sans-serif',size:12,weight:'600'},
+          bodyFont:{family:'JetBrains Mono,monospace',size:11},
+          callbacks:{
+            title(items){const i=items[0];if(i.dataset.label.includes('Deal')){const d=euroDeals.find(x=>x.id===i.raw.id);return d?d.club:i.dataset.label;}return i.dataset.label;},
+            label(i){if(i.dataset.label.includes('Deal')){const d=euroDeals.find(x=>x.id===i.raw.id);if(d)return[d.amount+' | '+d.year,'Investor: '+d.investor,'Stake: '+d.stake];}return '$'+i.raw.y.toFixed(2)+'B avg';}
+          }
+        }
+      },
+      onClick(evt,els){if(!els.length)return;const e=els[0];const ds=euroChart.data.datasets[e.datasetIndex];if(ds.label.includes('Deal')){const d=euroDeals.find(x=>x.id===ds.data[e.index].id);if(d)openEuroModal(d);}},
+      onHover(evt,els){evt.native.target.style.cursor=els.length?'pointer':'default';}
+    }
+  });
+}
+
+// ── EURO TABS ────────────────────────────────────────────────────────────────
+function setEuroTab(tab,btn){
+  euroTab=tab;
+  document.querySelectorAll('#euro-subtabs .sub-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const chartSec=document.getElementById('euro-chart-section');
+  const tbl=document.getElementById('euro-tbl');
+  if(tab==='index'){
+    chartSec.style.display='flex';
+    tbl.style.display='none';
+    setTimeout(()=>{ if(euroChart)euroChart.resize(); else initEuroChart(); },50);
+  } else {
+    chartSec.style.display='none';
+    tbl.style.display='block';
+    renderEuroTable(tab);
+  }
+}
+
+function renderEuroTable(tab){
+  const thead=document.getElementById('euro-thead');
+  const tbody=document.getElementById('euro-body');
+  const clubDeals=euroDeals.filter(d=>d.id.startsWith('e'));
+  const leagueDeals=euroDeals.filter(d=>d.id.startsWith('l'));
+  if(tab==='clubs'){
+    thead.innerHTML=`<tr><th>Year</th><th>Club</th><th>League</th><th>Type</th><th>Investor</th><th style="text-align:right">Amount</th><th style="text-align:right">Stake</th></tr>`;
+    tbody.innerHTML=clubDeals.sort((a,b)=>b.year-a.year).map(d=>`
+      <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
+        <td class="col-dim">${d.year}</td>
+        <td><div class="col-name">${d.club}</div><div class="col-sub">${d.country}</div></td>
+        <td><span class="badge ${d.leagueBadge}">${d.league}</span></td>
+        <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
+        <td class="col-dim">${d.investor}</td>
+        <td style="text-align:right" class="col-num">${d.amount}</td>
+        <td style="text-align:right" class="col-dim">${d.stake}</td>
+      </tr>`).join('');
+  } else {
+    thead.innerHTML=`<tr><th>Year</th><th>Entity</th><th>League</th><th>Investor</th><th>Type</th><th style="text-align:right">Amount</th><th style="text-align:right">Stake</th></tr>`;
+    tbody.innerHTML=leagueDeals.sort((a,b)=>b.year-a.year).map(d=>`
+      <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
+        <td class="col-dim">${d.year}</td>
+        <td class="col-name">${d.club}</td>
+        <td><span class="badge ${d.leagueBadge}">${d.league}</span></td>
+        <td class="col-dim">${d.investor}</td>
+        <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
+        <td style="text-align:right" class="col-num">${d.amount}</td>
+        <td style="text-align:right" class="col-dim">${d.stake}</td>
+      </tr>`).join('');
+  }
+}
+
+// ── FRANCHISE TABLE ──────────────────────────────────────────────────────────
+function renderFranchiseTable(){
+  let data=franchiseDeals.filter(t=>franchiseFilter==='all'||t.league.toLowerCase()===franchiseFilter);
+  data=[...data].sort((a,b)=>{const av=a[franchiseSort.col],bv=b[franchiseSort.col];return(typeof av==='string'?av.localeCompare(bv):av-bv)*franchiseSort.dir;});
+  document.getElementById('franchise-body').innerHTML=data.map(t=>{
+    const ps=(t.prem>=0?'+':'')+t.prem.toFixed(1)+'%';
+    const pc=t.prem>5?'col-green':t.prem<-5?'col-red':'col-amber';
+    return`<tr onclick="openFranchiseModal(franchiseDeals.find(x=>x.id===${t.id}))">
+      <td class="col-dim">${t.year}</td>
+      <td><div class="col-name">${t.franchise}</div></td>
+      <td><span class="badge ${t.badge}">${t.league}</span></td>
+      <td><span class="badge ${t.typeBadge}">${t.typeLabel}</span></td>
+      <td class="col-dim">${t.buyer}</td>
+      <td style="text-align:right" class="col-num">${t.currency}${t.val}B${t.id===14?'<sup style="font-size:9px;color:var(--text3)"> est.</sup>':''}</td>
+      <td style="text-align:right" class="col-dim">${t.stake}</td>
+      <td style="text-align:right" class="${pc}">${ps}</td>
+    </tr>`;
+  }).join('');
+}
+function setFranchiseFilter(f,btn){
+  franchiseFilter=f;
+  document.querySelectorAll('#franchise-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderFranchiseTable();
+}
+function sortFranchise(col){
+  franchiseSort.dir=franchiseSort.col===col?-franchiseSort.dir:-1;
+  franchiseSort.col=col;
+  renderFranchiseTable();
+}
+
+// ── MEDIA TABLE ──────────────────────────────────────────────────────────────
+function renderMediaTable(filter){
+  mediaFilter=filter||mediaFilter;
+  let data=mediaDeals.filter(d=>mediaFilter==='all'||d.sport===mediaFilter);
+  document.getElementById('media-body').innerHTML=data.sort((a,b)=>b.year-a.year).map(d=>`
+    <tr onclick="openMediaModal(mediaDeals.find(x=>x.id==='${d.id}'))">
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.entity}</div></td>
+      <td class="col-dim">${d.league}</td>
+      <td class="col-dim">${d.investor}</td>
+      <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+      <td class="col-dim">${d.duration}</td>
+      <td><span class="badge ${d.statusBadge}">${d.status}</span></td>
+    </tr>`).join('');
+}
+function setMediaFilter(f,btn){
+  document.querySelectorAll('#media-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderMediaTable(f);
+}
+
+// ── MODALS ───────────────────────────────────────────────────────────────────
+function openModal(html){ document.getElementById('modal-inner').innerHTML=html; document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+function sourceLink(url){ return url?`<div class="modal-source"><a href="${url}" target="_blank" rel="noopener">View source ↗</a></div>`:''; }
+
+function openFranchiseModal(t){
+  if(!t) return;
+  const ps=(t.prem>=0?'+':'')+t.prem.toFixed(1)+'%', pc=t.prem>=0?'pos':'neg';
+  openModal(`
+    <div class="modal-entity">${t.franchise}</div>
+    <div class="modal-badges"><span class="badge ${t.badge}">${t.league}</span><span class="badge ${t.typeBadge}">${t.typeLabel}</span></div>
+    <div class="modal-amount">${t.currency}${t.val}B</div>
+    <div class="modal-prem ${pc}">${ps} vs League Avg at Close</div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Year</div><div class="modal-fv">${t.year}</div></div>
+      <div class="modal-field"><div class="modal-fk">Buyer</div><div class="modal-fv" style="font-family:var(--font);font-size:12px">${t.buyer}</div></div>
+      <div class="modal-field"><div class="modal-fk">Stake</div><div class="modal-fv">${t.stake}</div></div>
+      <div class="modal-field"><div class="modal-fk">Lg Avg at Deal</div><div class="modal-fv">${t.currency}${t.lgAvg}B</div></div>
+    </div>
+    <div class="modal-notes">${t.notes}</div>
+    ${sourceLink(t.source)}
+  `);
+}
+
+function openEuroModal(d){
+  if(!d) return;
+  openModal(`
+    <div class="modal-entity">${d.club}</div>
+    <div class="modal-badges"><span class="badge ${d.leagueBadge}">${d.league}</span><span class="badge ${d.typeBadge}">${d.type}</span></div>
+    <div class="modal-amount">${d.amount}</div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Year</div><div class="modal-fv">${d.year}</div></div>
+      <div class="modal-field"><div class="modal-fk">Investor</div><div class="modal-fv" style="font-family:var(--font);font-size:12px">${d.investor}</div></div>
+      <div class="modal-field"><div class="modal-fk">Stake</div><div class="modal-fv">${d.stake}</div></div>
+      <div class="modal-field"><div class="modal-fk">Country</div><div class="modal-fv">${d.country}</div></div>
+    </div>
+    <div class="modal-notes">${d.notes}</div>
+    ${sourceLink(d.source)}
+  `);
+}
+
+function openMediaModal(d){
+  if(!d) return;
+  openModal(`
+    <div class="modal-entity">${d.entity}</div>
+    <div class="modal-badges"><span class="badge ${d.typeBadge}">${d.type}</span><span class="badge ${d.statusBadge}">${d.status}</span></div>
+    <div class="modal-amount">${d.value}</div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Year</div><div class="modal-fv">${d.year}</div></div>
+      <div class="modal-field"><div class="modal-fk">Investor</div><div class="modal-fv" style="font-family:var(--font);font-size:12px">${d.investor}</div></div>
+      <div class="modal-field"><div class="modal-fk">League</div><div class="modal-fv">${d.league}</div></div>
+      <div class="modal-field"><div class="modal-fk">Duration</div><div class="modal-fv">${d.duration}</div></div>
+    </div>
+    <div class="modal-notes">${d.notes}</div>
+    ${sourceLink(d.source)}
+  `);
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function tick(){ const n=new Date(),p=x=>String(x).padStart(2,'0'); document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds()); }
+setInterval(tick,1000); tick();
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  initMainChart();
+  renderFranchiseTable();
+  renderMediaTable();
+  // Euro chart initializes on first tab visit
+});
+</script>
+</body>
+</html>

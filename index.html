@@ -301,17 +301,12 @@ tbody tr:last-child td{border-bottom:none}
     </div>
 
     <!-- ══ EURO FOOTBALL ══ -->
-    <div class="page" id="page-euro">
-      <div class="page-top">
-        <div><div class="page-title">European Football</div><div class="page-sub">25 deals: club equity acquisitions, league commercial rights, and valuation index 2016–2025. Click any row for sourced detail.</div></div>
+    <div class="page" id="page-euro" style="overflow-y:auto">
+      <div class="page-top" style="flex-shrink:0">
+        <div><div class="page-title">European Football</div><div class="page-sub">Price index 2016–2025 with 21 club equity transactions. Click any dot or row for sourced deal detail.</div></div>
       </div>
-      <div class="sub-tabs" id="euro-subtabs">
-        <button class="sub-tab active" onclick="setEuroTab('index',this)">Price Index</button>
-        <button class="sub-tab" onclick="setEuroTab('clubs',this)">Club Equity (21)</button>
-        <button class="sub-tab" onclick="setEuroTab('leagues',this)">League Commercial (4)</button>
-      </div>
-      <!-- Price index chart -->
-      <div class="euro-chart-section" id="euro-chart-section">
+      <!-- Price index chart — always visible -->
+      <div class="euro-chart-section" id="euro-chart-section" style="flex:none;height:400px;min-height:0">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0">
           <span class="chart-label">Average Club Valuation by League (2016–2025, $B)</span>
           <div class="chart-legend">
@@ -401,9 +396,35 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div class="euro-footnote">Estimates based on Sportico, Deloitte Football Money League, and Forbes annual valuations. 2020 reflects COVID-adjusted figures. Deal dots show implied club enterprise value at transaction date — click any dot to open deal detail.</div>
       </div>
-      <!-- Club / League tables -->
-      <div class="tbl-wrap" id="euro-tbl" style="display:none;padding-top:12px">
-        <table><thead id="euro-thead"></thead><tbody id="euro-body"></tbody></table>
+      <!-- Club equity table — always visible below chart -->
+      <div style="border-top:1px solid var(--border);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px">
+          <span class="chart-label">Club Equity Transactions</span>
+          <div class="pill-group" id="euro-league-filter">
+            <button class="pill active" onclick="setEuroLeague('all',this)">All (21)</button>
+            <button class="pill" onclick="setEuroLeague('epl',this)">Premier League</button>
+            <button class="pill" onclick="setEuroLeague('seriea',this)">Serie A</button>
+            <button class="pill" onclick="setEuroLeague('laliga',this)">La Liga</button>
+            <button class="pill" onclick="setEuroLeague('ligue1',this)">Ligue 1</button>
+            <button class="pill" onclick="setEuroLeague('multi',this)">Multi-club</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="padding-top:0;max-height:440px;overflow-y:auto">
+          <table id="euro-club-table">
+            <thead>
+              <tr>
+                <th style="width:50px">Year</th>
+                <th style="width:180px">Club</th>
+                <th style="width:140px">League</th>
+                <th style="width:110px">Type</th>
+                <th>Investor</th>
+                <th style="text-align:right;width:110px">Amount</th>
+                <th style="text-align:right;width:120px">Stake</th>
+              </tr>
+            </thead>
+            <tbody id="euro-club-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -642,7 +663,7 @@ const tokenDeals = [
 ];
 
 // ── STATE ────────────────────────────────────────────────────────────────────
-let chartFilter='all', franchiseFilter='all', mediaFilter='all', euroTab='index', tokenFilter='all';
+let chartFilter='all', franchiseFilter='all', mediaFilter='all', tokenFilter='all';
 let mainChart=null, euroChart=null;
 let franchiseSort={col:'year',dir:-1};
 
@@ -790,32 +811,26 @@ function initEuroChart(){
   });
 }
 
-// ── EURO TABS ────────────────────────────────────────────────────────────────
-function setEuroTab(tab,btn){
-  euroTab=tab;
-  document.querySelectorAll('#euro-subtabs .sub-tab').forEach(t=>t.classList.remove('active'));
+// ── EURO LEAGUE FILTER ───────────────────────────────────────────────────────
+let euroLeague = 'all';
+const leagueMap = { epl:'b-epl', seriea:'b-seriea', laliga:'b-laliga', ligue1:'b-ligue1', multi:'b-multi' };
+
+function setEuroLeague(f, btn){
+  euroLeague = f;
+  document.querySelectorAll('#euro-league-filter .pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  const chartSec=document.getElementById('euro-chart-section');
-  const tbl=document.getElementById('euro-tbl');
-  if(tab==='index'){
-    chartSec.style.display='flex';
-    tbl.style.display='none';
-    // SVG chart — nothing to initialize
-  } else {
-    chartSec.style.display='none';
-    tbl.style.display='block';
-    renderEuroTable(tab);
-  }
+  renderEuroClubTable();
 }
 
-function renderEuroTable(tab){
-  const thead=document.getElementById('euro-thead');
-  const tbody=document.getElementById('euro-body');
-  const clubDeals=euroDeals.filter(d=>d.id.startsWith('e'));
-  const leagueDeals=euroDeals.filter(d=>d.id.startsWith('l'));
-  if(tab==='clubs'){
-    thead.innerHTML=`<tr><th>Year</th><th>Club</th><th>League</th><th>Type</th><th>Investor</th><th style="text-align:right">Amount</th><th style="text-align:right">Stake</th></tr>`;
-    tbody.innerHTML=clubDeals.sort((a,b)=>b.year-a.year).map(d=>`
+function renderEuroClubTable(){
+  const clubDeals = euroDeals.filter(d => d.id.startsWith('e'));
+  const filtered = euroLeague === 'all'
+    ? clubDeals
+    : clubDeals.filter(d => d.leagueBadge === leagueMap[euroLeague]);
+
+  document.getElementById('euro-club-body').innerHTML = filtered
+    .sort((a,b) => b.year - a.year)
+    .map(d => `
       <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
         <td class="col-dim">${d.year}</td>
         <td><div class="col-name">${d.club}</div><div class="col-sub">${d.country}</div></td>
@@ -825,20 +840,12 @@ function renderEuroTable(tab){
         <td style="text-align:right" class="col-num">${d.amount}</td>
         <td style="text-align:right" class="col-dim">${d.stake}</td>
       </tr>`).join('');
-  } else {
-    thead.innerHTML=`<tr><th>Year</th><th>Entity</th><th>League</th><th>Investor</th><th>Type</th><th style="text-align:right">Amount</th><th style="text-align:right">Stake</th></tr>`;
-    tbody.innerHTML=leagueDeals.sort((a,b)=>b.year-a.year).map(d=>`
-      <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
-        <td class="col-dim">${d.year}</td>
-        <td class="col-name">${d.club}</td>
-        <td><span class="badge ${d.leagueBadge}">${d.league}</span></td>
-        <td class="col-dim">${d.investor}</td>
-        <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
-        <td style="text-align:right" class="col-num">${d.amount}</td>
-        <td style="text-align:right" class="col-dim">${d.stake}</td>
-      </tr>`).join('');
-  }
 }
+
+// kept for any legacy SVG onclick references
+function renderEuroTable(tab){ renderEuroClubTable(); }
+function setEuroTab(){}
+
 
 // ── FRANCHISE TABLE ──────────────────────────────────────────────────────────
 function renderFranchiseTable(){
@@ -1012,9 +1019,9 @@ setInterval(tick,1000); tick();
 window.addEventListener('DOMContentLoaded',()=>{
   initMainChart();
   renderFranchiseTable();
+  renderEuroClubTable();
   renderMediaTable();
   renderTokenTable();
-  // Euro chart is hardcoded SVG — no init needed
 });
 </script>
 </body>

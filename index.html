@@ -276,6 +276,8 @@ tbody tr:last-child td{border-bottom:none}
           <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>NBA Avg</div>
           <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-color:#86efac"></div>NFL Deal</div>
           <div class="leg-item"><div class="leg-dot" style="background:var(--amber);border-color:#fde68a"></div>NBA Deal</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:1.5px dashed rgba(42,159,99,.5)"></div>NFL Proj</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:1.5px dashed rgba(184,131,42,.5)"></div>NBA Proj</div>
           <div class="leg-item"><div class="leg-line" style="border-top:1px dashed var(--blue)"></div>NBA PE Opens</div>
           <div class="leg-item"><div class="leg-line" style="border-top:1px dashed var(--red)"></div>NFL PE Opens</div>
         </div>
@@ -549,6 +551,9 @@ tbody tr:last-child td{border-bottom:none}
 
 const nflAvg = [{x:2019,y:2.5},{x:2020,y:3.0},{x:2021,y:3.5},{x:2022,y:4.2},{x:2023,y:4.8},{x:2024,y:5.6},{x:2025,y:7.13}];
 const nbaAvg = [{x:2019,y:1.9},{x:2020,y:2.1},{x:2021,y:2.3},{x:2022,y:2.58},{x:2023,y:3.5},{x:2024,y:4.0},{x:2025,y:5.51}];
+// Projected (2025 anchor = last actual, ~15% NFL CAGR / ~15-17% NBA CAGR driven by $76B broadcast)
+const nflProj = [{x:2025,y:7.13},{x:2026,y:8.20},{x:2027,y:9.43},{x:2028,y:10.85}];
+const nbaProj = [{x:2025,y:5.51},{x:2026,y:6.55},{x:2027,y:7.65},{x:2028,y:8.80}];
 
 const eplAvg   = [{x:2016,y:.70},{x:2017,y:.85},{x:2018,y:1.00},{x:2019,y:1.20},{x:2020,y:.85},{x:2021,y:1.05},{x:2022,y:1.50},{x:2023,y:1.80},{x:2024,y:2.15},{x:2025,y:2.60}];
 const laligaAvg= [{x:2016,y:.35},{x:2017,y:.42},{x:2018,y:.50},{x:2019,y:.65},{x:2020,y:.45},{x:2021,y:.55},{x:2022,y:.78},{x:2023,y:1.00},{x:2024,y:1.35},{x:2025,y:1.75}];
@@ -1144,6 +1149,17 @@ const pePlugin = {
     };
     drawLine(2020,'rgba(96,165,250,.55)','NBA PE','OPENS');
     drawLine(2024,'rgba(248,113,113,.45)','NFL PE','OPENS');
+    // Projection boundary at 2026
+    const xProj=scales.x.getPixelForValue(2026);
+    ctx.save();
+    ctx.setLineDash([2,4]); ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(xProj,chartArea.top); ctx.lineTo(xProj,chartArea.bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,.25)';
+    ctx.font="bold 9px Inter,system-ui,sans-serif";
+    ctx.fillText('2026+',xProj+5,chartArea.top+13);
+    ctx.fillText('PROJ',xProj+5,chartArea.top+24);
+    ctx.restore();
   }
 };
 
@@ -1174,6 +1190,10 @@ function buildMainDatasets(){
   return[
     {label:'NFL Avg',type:'line',data:sn?nflAvg:[],borderColor:'#2a9f63',backgroundColor:'rgba(42,159,99,.07)',fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#2a9f63',order:3},
     {label:'NBA Avg',type:'line',data:sb?nbaAvg:[],borderColor:'#b8832a',backgroundColor:'rgba(184,131,42,.07)',borderDash:[6,3],fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#b8832a',order:3},
+    {label:'NFL Proj',type:'line',data:sn?nflProj:[],borderColor:'rgba(42,159,99,.5)',backgroundColor:'rgba(42,159,99,.03)',borderDash:[5,5],fill:true,tension:.3,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#2a9f63',order:4,
+      tooltip:{callbacks:{label:i=>'$'+i.raw.y.toFixed(2)+'B (projected)'}}},
+    {label:'NBA Proj',type:'line',data:sb?nbaProj:[],borderColor:'rgba(184,131,42,.5)',backgroundColor:'rgba(184,131,42,.03)',borderDash:[5,5],fill:true,tension:.3,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#b8832a',order:4,
+      tooltip:{callbacks:{label:i=>'$'+i.raw.y.toFixed(2)+'B (projected)'}}},
     {label:'NFL Deal',type:'scatter',data:sn?nflPts:[],backgroundColor:'#2a9f63',borderColor:'#48c882',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
     {label:'NBA Deal',type:'scatter',data:sb?nbaPts:[],backgroundColor:'#b8832a',borderColor:'#d4a84e',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
   ];
@@ -1185,7 +1205,7 @@ function initMainChart(){
     options:{
       responsive:true,maintainAspectRatio:false,animation:{duration:200},
       scales:{
-        x:{type:'linear',min:2019.3,max:2025.7,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#344d62',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#172840'},border:{color:'#172840'}},
+        x:{type:'linear',min:2019.3,max:2028.3,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#344d62',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#172840'},border:{color:'#172840'}},
         y:{min:0,max:14,ticks:{callback:v=>'$'+v+'B',color:'#344d62',font:{family:'JetBrains Mono,monospace',size:10}},grid:{color:'#172840'},border:{color:'#172840'}}
       },
       plugins:{

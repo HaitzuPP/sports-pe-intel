@@ -554,36 +554,82 @@ tbody tr:last-child td{border-bottom:none}
       <div class="page-top">
         <div>
           <div class="page-title">English Football Transactions</div>
-          <div class="page-sub">50 ownership deals across the Premier League, Championship, League One and League Two / National League spanning 2015 to 2025. Click any row for deal detail.</div>
+          <div class="page-sub">50 ownership deals across the top 4 English leagues, 2015 – 2025</div>
         </div>
-        <div class="pill-group" id="efl-filter-group">
+        <div class="pill-group" id="efl-view-group">
+          <button class="pill active" onclick="setEflTab('table',this)">Table</button>
+          <button class="pill" onclick="setEflTab('chart',this)">Chart View</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="efl-stats" style="grid-template-columns:repeat(4,1fr);flex-shrink:0">
+        <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-val">50</div><div class="stat-chg neu">2015 – 2025</div></div>
+        <div class="stat-card"><div class="stat-label">Disclosed Value</div><div class="stat-val amber">£8.5B+</div><div class="stat-chg neu">Excl. undisclosed</div></div>
+        <div class="stat-card"><div class="stat-label">US-led Deals</div><div class="stat-val green">22</div><div class="stat-chg up">Largest single cohort</div></div>
+        <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val">Chelsea £4.25B</div><div class="stat-chg neu">BlueCo / Clearlake 2022</div></div>
+      </div>
+
+      <!-- ── TABLE SECTION ── -->
+      <div id="efl-sec-table" style="flex:1;min-height:0;display:flex;flex-direction:column">
+        <div style="padding:8px 24px;flex-shrink:0;display:flex;gap:4px" id="efl-filter-row">
           <button class="pill active" onclick="setEflFilter('all',this)">All Leagues</button>
           <button class="pill" onclick="setEflFilter('premier',this)">Premier League</button>
           <button class="pill" onclick="setEflFilter('championship',this)">Championship</button>
           <button class="pill" onclick="setEflFilter('league1',this)">League One</button>
-          <button class="pill" onclick="setEflFilter('league2',this)">League Two / National</button>
+          <button class="pill" onclick="setEflFilter('league2',this)">Lge Two / Nat.</button>
+        </div>
+        <div class="tbl-wrap" style="overflow-y:auto;flex:1">
+          <table id="efl-table">
+            <thead id="efl-thead"><tr>
+              <th data-sort="year" onclick="sortEfl('year')" style="width:44px">Year</th>
+              <th data-sort="club" onclick="sortEfl('club')">Club</th>
+              <th class="hide-mobile">League</th>
+              <th data-sort="acquirer" onclick="sortEfl('acquirer')">Acquirer</th>
+              <th data-sort="nationality" onclick="sortEfl('nationality')" class="hide-mobile">Nationality</th>
+              <th style="text-align:right" class="hide-mobile">Stake</th>
+              <th data-sort="valueNum" onclick="sortEfl('valueNum')" style="text-align:right">Value</th>
+              <th style="text-align:right">Type</th>
+            </tr></thead>
+            <tbody id="efl-body"></tbody>
+          </table>
         </div>
       </div>
-      <div class="stats-grid" id="efl-stats" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-val" id="efl-stat-count">50</div><div class="stat-chg neu">2015 – 2025</div></div>
-        <div class="stat-card"><div class="stat-label">Disclosed Value</div><div class="stat-val amber" id="efl-stat-val">£8.5B+</div><div class="stat-chg neu">Excl. undisclosed</div></div>
-        <div class="stat-card"><div class="stat-label">US-led Deals</div><div class="stat-val green" id="efl-stat-us">22</div><div class="stat-chg up">Largest single cohort</div></div>
-        <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val" id="efl-stat-top">Chelsea £4.25B</div><div class="stat-chg neu">BlueCo / Clearlake 2022</div></div>
-      </div>
-      <div class="tbl-wrap" style="overflow-y:auto;flex:1">
-        <table id="efl-table">
-          <thead id="efl-thead"><tr>
-            <th data-sort="year" onclick="sortEfl('year')" style="width:44px">Year</th>
-            <th data-sort="club" onclick="sortEfl('club')">Club</th>
-            <th class="hide-mobile">League</th>
-            <th data-sort="acquirer" onclick="sortEfl('acquirer')">Acquirer</th>
-            <th data-sort="nationality" onclick="sortEfl('nationality')" class="hide-mobile">Nationality</th>
-            <th style="text-align:right" class="hide-mobile">Stake</th>
-            <th data-sort="valueNum" onclick="sortEfl('valueNum')" style="text-align:right">Value</th>
-            <th style="text-align:right">Type</th>
-          </tr></thead>
-          <tbody id="efl-body"></tbody>
-        </table>
+
+      <!-- ── CHART SECTION ── -->
+      <div id="efl-sec-chart" style="display:none;flex:1;min-height:0;overflow-y:auto">
+        <div style="padding:16px 24px 24px;display:flex;flex-direction:column;gap:24px">
+
+          <!-- Chart 1: Deal volume by year, stacked by league -->
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Deal Volume by Year &amp; League Tier</div>
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:rgba(104,112,184,.8);display:inline-block"></span>PL</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:rgba(184,131,42,.8);display:inline-block"></span>Championship</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:rgba(42,143,181,.8);display:inline-block"></span>League One</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:rgba(42,159,99,.6);display:inline-block"></span>Lge Two / Nat.</div>
+              </div>
+            </div>
+            <div style="height:220px;position:relative"><canvas id="efl-vol-chart"></canvas></div>
+          </div>
+
+          <!-- Chart 2: Disclosed deal values, horizontal bar, log scale -->
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px">
+            <div style="margin-bottom:12px;flex-shrink:0">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Disclosed Deal Values — Log Scale (£M)</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">30 of 50 deals have publicly disclosed values. Colour matches league tier.</div>
+            </div>
+            <div style="height:520px;position:relative"><canvas id="efl-val-chart"></canvas></div>
+          </div>
+
+          <!-- Chart 3: Nationality breakdown -->
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px">
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Acquirer Nationality — Deal Count</div>
+            </div>
+            <div style="height:220px;position:relative"><canvas id="efl-nat-chart"></canvas></div>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -1208,7 +1254,7 @@ let eflFilter='all';
 
 function setEflFilter(f,el){
   eflFilter=f;
-  document.querySelectorAll('#efl-filter-group .pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#efl-filter-row .pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   renderEflTable();
 }
@@ -1235,6 +1281,193 @@ function sortEfl(col){
   eflSort.dir=eflSort.col===col?-eflSort.dir:-1;
   eflSort.col=col;
   renderEflTable();
+}
+
+// ── EFL CHART VIEW ────────────────────────────────────────────────────────────
+let eflVolChart=null, eflValChart=null, eflNatChart=null;
+
+function setEflTab(tab, el){
+  document.querySelectorAll('#efl-view-group .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const isChart = tab==='chart';
+  document.getElementById('efl-sec-table').style.display = isChart ? 'none' : 'flex';
+  document.getElementById('efl-sec-chart').style.display = isChart ? 'block' : 'none';
+  if(isChart) setTimeout(initEflCharts, 40);
+}
+
+function initEflCharts(){
+  _initEflVolChart();
+  _initEflValChart();
+  _initEflNatChart();
+}
+
+// ── Chart 1: Stacked bar — deals per year by league tier ─────────────────────
+function _initEflVolChart(){
+  const ctx = document.getElementById('efl-vol-chart');
+  if(!ctx) return;
+  if(eflVolChart){ eflVolChart.resize(); return; }
+  const years=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  const cnt={};
+  years.forEach(y=>cnt[y]={premier:0,championship:0,league1:0,lower:0});
+  eflDeals.forEach(d=>{
+    const b=cnt[d.year];
+    if(!b) return;
+    if(d.league==='premier') b.premier++;
+    else if(d.league==='championship') b.championship++;
+    else if(d.league==='league1') b.league1++;
+    else b.lower++;
+  });
+  const grid='rgba(23,40,64,1)';
+  eflVolChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:years.map(String),
+      datasets:[
+        {label:'Premier League',data:years.map(y=>cnt[y].premier),backgroundColor:'rgba(104,112,184,.8)',borderColor:'rgba(104,112,184,1)',borderWidth:1},
+        {label:'Championship',data:years.map(y=>cnt[y].championship),backgroundColor:'rgba(184,131,42,.8)',borderColor:'rgba(184,131,42,1)',borderWidth:1},
+        {label:'League One',data:years.map(y=>cnt[y].league1),backgroundColor:'rgba(42,143,181,.8)',borderColor:'rgba(42,143,181,1)',borderWidth:1},
+        {label:'Lge Two / National',data:years.map(y=>cnt[y].lower),backgroundColor:'rgba(42,159,99,.6)',borderColor:'rgba(42,159,99,1)',borderWidth:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:t=>'Year: '+t[0].label,
+          label:t=>` ${t.dataset.label}: ${t.parsed.y} deal${t.parsed.y!==1?'s':''}`
+        }}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',font:{family:'Inter,system-ui,sans-serif',size:11}}},
+        y:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',stepSize:1,font:{size:11}},
+           title:{display:true,text:'Deals',color:'#344d62',font:{size:10}}}
+      }
+    }
+  });
+}
+
+// ── Chart 2: Horizontal bar — disclosed deal values (log scale) ───────────────
+function _initEflValChart(){
+  const ctx = document.getElementById('efl-val-chart');
+  if(!ctx) return;
+  if(eflValChart){ eflValChart.resize(); return; }
+  const leagueCol={
+    premier:'rgba(104,112,184,.8)',
+    championship:'rgba(184,131,42,.8)',
+    league1:'rgba(42,143,181,.8)',
+    league2:'rgba(42,159,99,.6)',
+    national:'rgba(42,159,99,.6)'
+  };
+  const disclosed=eflDeals
+    .map(d=>({...d,vn:parseValStr(d.value)}))
+    .filter(d=>d.vn>0)
+    .sort((a,b)=>a.vn-b.vn); // ascending so biggest is at top of horizontal bar
+  const labels=disclosed.map(d=>`${d.club} '${String(d.year).slice(2)}`);
+  const vals=disclosed.map(d=>d.vn);
+  const bgColors=disclosed.map(d=>leagueCol[d.league]||'rgba(100,120,140,.6)');
+  const grid='rgba(23,40,64,1)';
+  eflValChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Deal Value',data:vals,backgroundColor:bgColors,borderColor:bgColors.map(c=>c.replace('.8','1').replace('.6','1')),borderWidth:1}]},
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:t=>{
+            const v=t.parsed.x;
+            return ' £'+(v>=1000?(v/1000).toFixed(2)+'B':Math.round(v)+'M');
+          }
+        }}
+      },
+      scales:{
+        x:{
+          type:'logarithmic',
+          grid:{color:grid},
+          min:1,
+          ticks:{
+            color:'#637a90',
+            font:{size:10},
+            callback:v=>{
+              if([1,5,10,50,100,500,1000,5000].includes(v))
+                return v>=1000?'£'+(v/1000)+'B':'£'+v+'M';
+              return '';
+            }
+          },
+          title:{display:true,text:'Deal Value (log scale)',color:'#344d62',font:{size:10}}
+        },
+        y:{
+          grid:{display:false},
+          ticks:{color:'#637a90',font:{family:'Inter,system-ui,sans-serif',size:10}}
+        }
+      }
+    }
+  });
+}
+
+// ── Chart 3: Horizontal bar — acquirer nationality breakdown ──────────────────
+function _initEflNatChart(){
+  const ctx = document.getElementById('efl-nat-chart');
+  if(!ctx) return;
+  if(eflNatChart){ eflNatChart.resize(); return; }
+  // Group by simplified nationality category
+  const natMap={};
+  eflDeals.forEach(d=>{
+    const raw=d.nationality;
+    let cat='Other';
+    if(/american|us\b/i.test(raw)) cat='American';
+    else if(/british|welsh/i.test(raw)) cat='British';
+    else if(/chinese/i.test(raw)) cat='Chinese';
+    else if(/saudi|bahrain|gulf|middle east/i.test(raw)) cat='Gulf / Saudi';
+    else if(/thai/i.test(raw)) cat='Thai';
+    else if(/turkish/i.test(raw)) cat='Turkish';
+    else if(/greek/i.test(raw)) cat='Greek';
+    else if(/czech|swiss|danish|italian|german|french|spanish|swedish/i.test(raw)) cat='European';
+    else if(/indonesian/i.test(raw)) cat='Indonesian';
+    natMap[cat]=(natMap[cat]||0)+1;
+  });
+  const sorted=Object.entries(natMap).sort((a,b)=>b[1]-a[1]);
+  const natColors={
+    'American':'rgba(104,112,184,.8)',
+    'British':'rgba(42,159,99,.8)',
+    'Chinese':'rgba(184,131,42,.8)',
+    'Gulf / Saudi':'rgba(42,143,181,.8)',
+    'Thai':'rgba(191,79,79,.7)',
+    'European':'rgba(150,120,180,.7)',
+    'Turkish':'rgba(184,90,42,.7)',
+    'Greek':'rgba(42,100,150,.7)',
+    'Indonesian':'rgba(100,180,120,.7)',
+    'Other':'rgba(80,100,120,.6)'
+  };
+  const grid='rgba(23,40,64,1)';
+  eflNatChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:sorted.map(e=>e[0]),
+      datasets:[{
+        label:'Deals',
+        data:sorted.map(e=>e[1]),
+        backgroundColor:sorted.map(e=>natColors[e[0]]||'rgba(80,100,120,.6)'),
+        borderWidth:0,
+        borderRadius:3
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:t=>` ${t.parsed.x} deal${t.parsed.x!==1?'s':''}`}}
+      },
+      scales:{
+        x:{grid:{color:grid},ticks:{color:'#637a90',stepSize:1,font:{size:11}},
+           title:{display:true,text:'Number of deals',color:'#344d62',font:{size:10}}},
+        y:{grid:{display:false},ticks:{color:'#637a90',font:{size:11}}}
+      }
+    }
+  });
 }
 
 function openEflModal(d){
@@ -1328,7 +1561,11 @@ document.getElementById('main-nav').addEventListener('click', e=>{
   if(e.target.dataset.page==='market' && mainChart) setTimeout(()=>mainChart.resize(),50);
   if(e.target.dataset.page==='euro') setTimeout(()=>{ if(!euroChart) initEuroChart(); else euroChart.resize(); },50);
   if(e.target.dataset.page==='rwa') setTimeout(()=>{ if(rwaTab==='chart'){ if(!rwaChart) initRwaChart(); else rwaChart.resize(); }},50);
-  if(e.target.dataset.page==='efl') renderEflTable();
+  if(e.target.dataset.page==='efl'){
+    renderEflTable();
+    // resize charts if chart tab is visible
+    setTimeout(()=>{ if(eflVolChart) eflVolChart.resize(); if(eflValChart) eflValChart.resize(); if(eflNatChart) eflNatChart.resize(); },50);
+  }
 });
 
 // ── CHART PLUGINS ────────────────────────────────────────────────────────────

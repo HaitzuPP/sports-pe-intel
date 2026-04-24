@@ -243,6 +243,7 @@ tbody tr:last-child td{border-bottom:none}
       <button class="nav-tab" data-page="alt">Alt Sports</button>
       <button class="nav-tab" data-page="rwa">RWA Intel</button>
       <button class="nav-tab" data-page="pe-investors">PE Investors</button>
+      <button class="nav-tab" data-page="efl">EFL Transactions</button>
     </nav>
     <div class="header-right">
       <span class="badge-count" id="deal-count">-- deals</span>
@@ -532,6 +533,44 @@ tbody tr:last-child td{border-bottom:none}
             <th style="text-align:right">Status</th>
           </tr></thead>
           <tbody id="pe-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── EFL TRANSACTIONS ───────────────────────────────────────────────── -->
+    <div class="page" id="page-efl">
+      <div class="page-top">
+        <div>
+          <div class="page-title">English Football Transactions</div>
+          <div class="page-sub">50 ownership deals across the Premier League, Championship, League One and League Two / National League spanning 2015 to 2025. Click any row for deal detail.</div>
+        </div>
+        <div class="pill-group" id="efl-filter-group">
+          <button class="pill active" onclick="setEflFilter('all',this)">All Leagues</button>
+          <button class="pill" onclick="setEflFilter('premier',this)">Premier League</button>
+          <button class="pill" onclick="setEflFilter('championship',this)">Championship</button>
+          <button class="pill" onclick="setEflFilter('league1',this)">League One</button>
+          <button class="pill" onclick="setEflFilter('league2',this)">League Two / National</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="efl-stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-val" id="efl-stat-count">50</div><div class="stat-chg neu">2015 – 2025</div></div>
+        <div class="stat-card"><div class="stat-label">Disclosed Value</div><div class="stat-val amber" id="efl-stat-val">£8.5B+</div><div class="stat-chg neu">Excl. undisclosed</div></div>
+        <div class="stat-card"><div class="stat-label">US-led Deals</div><div class="stat-val green" id="efl-stat-us">22</div><div class="stat-chg up">Largest single cohort</div></div>
+        <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val" id="efl-stat-top">Chelsea £4.25B</div><div class="stat-chg neu">BlueCo / Clearlake 2022</div></div>
+      </div>
+      <div class="tbl-wrap" style="overflow-y:auto;flex:1">
+        <table id="efl-table">
+          <thead><tr>
+            <th style="width:44px">Year</th>
+            <th>Club</th>
+            <th class="hide-mobile">League</th>
+            <th>Acquirer</th>
+            <th class="hide-mobile">Nationality</th>
+            <th style="text-align:right" class="hide-mobile">Stake</th>
+            <th style="text-align:right">Value</th>
+            <th style="text-align:right">Type</th>
+          </tr></thead>
+          <tbody id="efl-body"></tbody>
         </table>
       </div>
     </div>
@@ -1066,6 +1105,106 @@ const peInvestors = [
   }
 ];
 
+// ── EFL TRANSACTIONS DATA ────────────────────────────────────────────────────
+const eflDeals = [
+  {id:'ef1',year:2015,club:'Sheffield Wednesday',acquirer:'Dejphon Chansiri',nationality:'Thai',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£37.5M',type:'full',typeBadge:'b-full',notes:'Thai businessman Dejphon Chansiri completed full takeover from Milanese owner Milan Mandaric, stabilising a club in long-term decline and funding ambitious signings that delivered consecutive playoff campaigns without promotion.'},
+  {id:'ef2',year:2015,club:'Crystal Palace',acquirer:'Harris / Blitzer',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'36%',value:'£50M',type:'minority',typeBadge:'b-majority',notes:'PE veterans Josh Harris (Apollo) and David Blitzer (Blackstone) acquired a combined 36% minority stake at an implied ~£140M valuation. The investment preceded a wave of US PE capital into English football and delivered a strong return as Crystal Palace\'s value grew to £500M+ by the mid-2020s.'},
+  {id:'ef3',year:2015,club:'Derby County',acquirer:'Mel Morris',nationality:'British',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'~£49M',type:'full',typeBadge:'b-full',notes:'Tech entrepreneur Mel Morris acquired full control from the Pearson family, funding the Bielsa pursuit and eventually appointing Frank Lampard whose 2019 playoff final defeat masked worsening finances that ended in administration in 2021.'},
+  {id:'ef4',year:2016,club:'Everton',acquirer:'Farhad Moshiri',nationality:'Iranian-British',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'49.9%',value:'£87.5M',type:'minority',typeBadge:'b-majority',notes:'Iranian-British billionaire Farhad Moshiri bought 49.9% from Bill Kenwright, spending over £500M net on transfers in the subsequent eight years without landing a trophy, ultimately selling to the Friedkin Group in 2024 under the shadow of administration risk and a new stadium with overrun costs.'},
+  {id:'ef5',year:2016,club:'Wolverhampton Wanderers',acquirer:'Fosun International',nationality:'Chinese',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£45M',type:'full',typeBadge:'b-full',notes:'Chinese conglomerate Fosun acquired from Steve Morgan at Championship level. The Jorge Mendes-Fosun relationship drove a wave of Portuguese signings under Nuno Espirito Santo, delivering Premier League promotion in 2018 and a Europa League semi-final in 2020.'},
+  {id:'ef6',year:2016,club:'Aston Villa',acquirer:'Dr Tony Xia',nationality:'Chinese',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£76M',type:'full',typeBadge:'b-full',notes:'Dr Tony Xia acquired from Randy Lerner following Villa\'s relegation to the Championship, making big promises on spending and a stadium rebrand. Two missed promotions and a spending binge without parachute payments drained cash and triggered a rescue sale in 2018.'},
+  {id:'ef7',year:2016,club:'West Brom',acquirer:'Guochuan Lai',nationality:'Chinese',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'88%',value:'~£175M',type:'full',typeBadge:'b-full',notes:'Guochuan Lai acquired 88% controlling stake from Jeremy Peace at an implied ~£200M valuation while West Brom was a Premier League club. Remote ownership and minimal investment in infrastructure saw the club relegated in 2018 and eventually sold to Shilen Patel in 2024.'},
+  {id:'ef8',year:2016,club:'Swansea City',acquirer:'Kaplan / Levien',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'60%',value:'£110M',type:'full',typeBadge:'b-full',notes:'Steve Kaplan and Jason Levien acquired 60% of Swansea at an implied ~£183M valuation while the club played in the Premier League. Relegation in 2018 materially reset the asset value; the Supporters\' Trust retained 21.1% and the club was eventually sold to Andy Coleman in 2023.'},
+  {id:'ef9',year:2017,club:'Leeds United',acquirer:'Andrea Radrizzani',nationality:'Italian',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£45M',type:'full',typeBadge:'b-full',notes:'Italian media entrepreneur Radrizzani first bought 50% in January 2017 then exercised his full-control option in May 2017. The Bielsa appointment in 2018 transformed the club: promotion in 2020, two Premier League seasons, then relegation before a 49ers Enterprises sale in 2023.'},
+  {id:'ef10',year:2017,club:'Nottingham Forest',acquirer:'Evangelos Marinakis',nationality:'Greek',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'~£50M',type:'full',typeBadge:'b-full',notes:'Greek shipping magnate and Olympiakos owner Marinakis acquired full control. After five Championship seasons, Steve Cooper delivered promotion in 2022 and Forest has remained a top-flight club. Marinakis also owns Olympiakos, creating a dual-club structure with Champions League implications.'},
+  {id:'ef11',year:2017,club:'Barnsley',acquirer:'Chien Lee / Paul Conway',nationality:'Asian-American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'80%',value:'N/D',type:'majority',typeBadge:'b-majority',notes:'New City Capital\'s Chien Lee and Pacific Media Group\'s Paul Conway acquired 80% from the Cryne family. Billy Beane was among co-investors. Both principals were later fined by the EFL for failing to disclose the full ownership structure. They departed the board in 2022.'},
+  {id:'ef12',year:2017,club:'Reading',acquirer:'Dai Yongge',nationality:'Chinese',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Chinese businessman Dai Yongge acquired from a prior three-person consortium. Ambitions of reaching the Premier League quickly faded: the club suffered multiple points deductions for financial rule breaches, was relegated to League One, and required sale to Rob Couhig in 2024 to avoid collapse.'},
+  {id:'ef13',year:2017,club:'Portsmouth',acquirer:'Michael Eisner / Tornante Co.',nationality:'American',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'£5.67M',type:'full',typeBadge:'b-full',notes:'Former Disney CEO Michael Eisner acquired control through his Tornante Company at League One level, providing stability after the club\'s 2012 administration. Eisner oversaw a gradual rebuild that positioned Portsmouth for promotion challenges before a subsequent sale.'},
+  {id:'ef14',year:2018,club:'Oxford United',acquirer:'Sumrith Thanakarnjanasuth',nationality:'Thai',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Thai businessman "Tiger" Thanakarnjanasuth, a former Reading co-investor, acquired Oxford United in League One. The club was subsequently sold to Indonesian businessmen Erick Thohir and Anindya Bakrie in 2022, illustrating the revolving-door nature of smaller EFL ownership.'},
+  {id:'ef15',year:2018,club:'Aston Villa',acquirer:'Sawiris / Edens (rescue)',nationality:'Egyptian / American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'55%',value:'~£50M',type:'majority',typeBadge:'b-majority',notes:'Egyptian billionaire Nassef Sawiris and US investor Wes Edens injected emergency capital to rescue Villa from administration risk after Tony Xia\'s cash dried up. The rescue worked: Steve Bruce then Dean Smith delivered the 2019 playoff final victory. Under Unai Emery, the club has reached the Champions League.'},
+  {id:'ef16',year:2018,club:'Plymouth Argyle',acquirer:'Simon Hallett',nationality:'British',league:'league2',leagueLabel:'League Two',leagueBadge:'b-seriea',stake:'51%',value:'N/D',type:'majority',typeBadge:'b-majority',notes:'Data scientist Simon Hallett became majority owner with a focus on structured, sustainable development. Back-to-back promotions from League Two to the Championship followed under Steven Schumacher, representing one of the best-value rebuilds in modern EFL history.'},
+  {id:'ef17',year:2019,club:'Bolton Wanderers',acquirer:'Football Ventures (Whites)',nationality:'British',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'~£10M',type:'full',typeBadge:'b-full',notes:'Bolton were sold out of administration to Football Ventures (Whites) Ltd after Ken Anderson\'s chaotic ownership left an unpaid £1.2M tax bill and months of wage arrears. The deal rescued the club from liquidation and began a slow recovery from League One.'},
+  {id:'ef18',year:2019,club:'Blackpool',acquirer:'Simon Sadler',nationality:'British',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'96%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Blackpool-born businessman Simon Sadler acquired 96% from the controversial Oyston family following a protracted legal battle with supporter groups. The club achieved League One promotion under Neil Critchley within two seasons of the ownership change.'},
+  {id:'ef19',year:2019,club:'Charlton Athletic',acquirer:'East Street Investments',nationality:'Multi',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'~£1M',type:'full',typeBadge:'b-full',notes:'East Street Investments (ESI) acquired Charlton from Roland Duchatelet for a nominal fee. The deal immediately unravelled: principals Matt Southall and Tahnoon Nimer fell out publicly within months, destabilising the club and requiring Thomas Sandgaard to step in and complete a full rescue in September 2020.'},
+  {id:'ef20',year:2020,club:'Burnley',acquirer:'ALK Capital / Alan Pace',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'84%',value:'N/D',type:'full',typeBadge:'b-full',notes:'US investment firm ALK Capital led by Alan Pace acquired Burnley from Mike Garlick at Championship level. Promotion under Sean Dyche followed in 2022. Relegation from the Premier League in 2023 accelerated the sale process as ALK Capital sought to exit before the parachute payments expired.'},
+  {id:'ef21',year:2020,club:'Charlton Athletic',acquirer:'Thomas Sandgaard',nationality:'Danish-American',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'~£5M',type:'full',typeBadge:'b-full',notes:'Danish-American medical device entrepreneur Sandgaard rescued Charlton from the wreckage of the ESI deal, purchasing 100% of the playing entity while Roland Duchatelet retained ownership of The Valley stadium under a long-term lease arrangement.'},
+  {id:'ef22',year:2021,club:'Ipswich Town',acquirer:'Gamechanger20',nationality:'American',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'~£40M',type:'full',typeBadge:'b-full',notes:'American consortium Gamechanger20, led by Brett Johnson and Mark Detmer, acquired 100% from the Evans family. Under Kieran McKenna, Ipswich delivered back-to-back League One and Championship titles, reaching the Premier League in 2024 for the first time since 2002.'},
+  {id:'ef23',year:2021,club:'Sunderland',acquirer:'Kyril Louis-Dreyfus',nationality:'Swiss-French',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'41%',value:'~£40M',type:'minority',typeBadge:'b-majority',notes:'23-year-old Kyril Louis-Dreyfus (son of the Louis-Dreyfus commodity empire) took an initial 41% stake at League One level. He became majority owner in June 2022 following promotion to the Championship, positioning Sunderland as a Premier League candidate under a methodical rebuild.'},
+  {id:'ef24',year:2021,club:'Wigan Athletic',acquirer:'Phoenix 2021 / Al-Jasmi',nationality:'Bahraini',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Bahraini businessman Abdulrahman Al-Jasmi\'s Phoenix 2021 Limited rescued Wigan from administration for a nominal sum. The rescue proved unstable with recurring late wage payments from summer 2022. The EFL deducted points and Mike Danson stepped in to purchase the club in June 2023.'},
+  {id:'ef25',year:2021,club:'Wrexham',acquirer:'Reynolds / McElhenney',nationality:'American',league:'national',leagueLabel:'National Lg.',leagueBadge:'b-seriea',stake:'100%',value:'£2M',type:'full',typeBadge:'b-full',notes:'Actors Ryan Reynolds and Rob McElhenney purchased the National League club for £2M, launching the globally distributed "Welcome to Wrexham" documentary. Three consecutive promotions to League One followed, with the club\'s media valuation far exceeding traditional football metrics.'},
+  {id:'ef26',year:2021,club:'Newcastle United',acquirer:'Saudi PIF / PCP / RB Sports',nationality:'Saudi / British',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'80%',value:'£305M',type:'full',typeBadge:'b-full',notes:'Saudi Arabia\'s Public Investment Fund (80%), PCP Capital Partners (10%), and RB Sports & Media (10%) completed the £305M acquisition after an 18-month Premier League arbitration on broadcast piracy. The deal reshaped top-flight power structures and enabled Champions League-level squad investment.'},
+  {id:'ef27',year:2021,club:'Crystal Palace',acquirer:'John Textor',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'40%',value:'£87.5M',type:'minority',typeBadge:'b-majority',notes:'US tech entrepreneur Textor acquired 40% for £87.5M as part of his Eagle Football multi-club strategy alongside Botafogo and Lyon. FA and UEFA multi-club conflict rules eventually forced a sale to Woody Johnson in 2025 after Lyon obligations created regulatory complications.'},
+  {id:'ef28',year:2021,club:'West Ham United',acquirer:'Daniel Kretinsky',nationality:'Czech',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'27%',value:'~£170M',type:'minority',typeBadge:'b-majority',notes:'Czech energy billionaire Daniel Kretinsky acquired 27% from Sullivan and Gold at an implied ~£630M club valuation. He subsequently increased his stake to ~36% in 2023. Sullivan and Gold have been seeking a full exit as legacy shareholders, positioning Kretinsky as the dominant incoming owner.'},
+  {id:'ef29',year:2022,club:'Hull City',acquirer:'Acun Ilicali',nationality:'Turkish',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£30M',type:'full',typeBadge:'b-full',notes:'Turkish TV mogul Acun Ilicali completed £30M acquisition from the Allam family (£20M conditional on PL promotion), ending an 11-year tenure. High-profile signings and heavy investment followed, though Premier League promotion has not yet materialised.'},
+  {id:'ef30',year:2022,club:'Derby County',acquirer:'David Clowes',nationality:'British',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'£33M',type:'full',typeBadge:'b-full',notes:'Derbyshire property developer David Clowes acquired Derby out of administration after Mel Morris\'s ownership collapsed under £80M+ in liabilities. Clowes paid creditors in full, earned immediate goodwill, and the club returned to the Championship under Wayne Rooney in 2023.'},
+  {id:'ef31',year:2022,club:'Chelsea',acquirer:'BlueCo / Clearlake / Boehly',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'100%',value:'£4.25B',type:'full',typeBadge:'b-full',notes:'Todd Boehly-led consortium with Clearlake Capital completed the £4.25B acquisition from Roman Abramovich following his sanctioning by the UK government. The largest football club sale in history at the time. Subsequent spending of £1B+ on transfer fees in 18 months made the post-acquisition strategy highly controversial.'},
+  {id:'ef32',year:2022,club:'Bournemouth',acquirer:'Bill Foley (minority)',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'~25%',value:'~£120M',type:'minority',typeBadge:'b-majority',notes:'Las Vegas Golden Knights owner Bill Foley acquired a ~25% minority stake at an implied ~£480M valuation. Foley brings a franchise-building playbook from US ice hockey; Bournemouth represent a proving ground for his multi-sport ownership model.'},
+  {id:'ef33',year:2022,club:'Oxford United',acquirer:'Thohir / Bakrie',nationality:'Indonesian',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Indonesian businessmen Erick Thohir and Anindya Bakrie acquired Oxford United from Thai owner Sumrith Thanakarnjanasuth. Thohir has multi-sport credentials as former Inter Milan co-owner and is currently president of the Indonesian Football Association. Oxford won promotion to the Championship in 2024.'},
+  {id:'ef34',year:2022,club:'Norwich City',acquirer:'Mark Attanasio (minority)',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'~15%',value:'N/D',type:'minority',typeBadge:'b-majority',notes:'Milwaukee Brewers MLB owner Mark Attanasio acquired a minority stake, joining a growing cohort of American franchise owners using English football as a diversification vehicle. Norwich remain in the Championship under the continuing Delia Smith/Michael Wynn-Jones tenure.'},
+  {id:'ef35',year:2023,club:'Liverpool',acquirer:'Dynasty Equity',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'~3%',value:'~£150M',type:'minority',typeBadge:'b-majority',notes:'US private equity firm Dynasty Equity Partners acquired a small minority stake from FSG at an implied £5B+ club valuation, one of the highest ever ascribed to a football club. The deal allowed FSG to crystallise partial value ahead of the Arne Slot appointment and another Premier League title cycle.'},
+  {id:'ef36',year:2023,club:'Manchester United',acquirer:'INEOS / Sir Jim Ratcliffe',nationality:'British',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'27.7%',value:'£1.26B',type:'minority',typeBadge:'b-majority',notes:'Sir Jim Ratcliffe\'s INEOS group acquired 27.7% from the Glazer family for £1.26B, taking control of sporting operations. The deal was complex: Ratcliffe took sporting control without majority economic ownership, creating a split governance structure that continues to create tension.'},
+  {id:'ef37',year:2023,club:'Leeds United',acquirer:'49ers Enterprises',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'56%',value:'~£200M',type:'full',typeBadge:'b-full',notes:'San Francisco 49ers\' ownership vehicle acquired 56% majority control from Radrizzani following Premier League relegation at an implied ~£357M club valuation. 49ers Enterprises brings NFL-grade commercial infrastructure; promotion back to the Premier League in 2024 validated the acquisition.'},
+  {id:'ef38',year:2023,club:'Birmingham City',acquirer:'Knighthead Capital / Tom Brady',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'US hedge fund Knighthead Capital and NFL legend Tom Brady acquired Birmingham City plus St Andrew\'s stadium. Brady became a co-owner, the first active NFL player to own an English football club. The deal was positioned as a transformation story, though early results have been mixed in League One.'},
+  {id:'ef39',year:2023,club:'Huddersfield Town',acquirer:'Kevin Nagle',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Former EnvisionRx CEO Kevin Nagle, also a Sacramento Kings co-investor, acquired Huddersfield from Dean Hoyle. Nagle brings a multi-sport ownership template; the club faces a rebuild from the bottom of the Championship following consecutive poor seasons.'},
+  {id:'ef40',year:2023,club:'Wigan Athletic',acquirer:'Mike Danson',nationality:'British',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Wigan-born billionaire and Wigan Warriors RLFC co-owner Mike Danson purchased the football club from the failing Phoenix 2021 ownership group, immediately clearing all outstanding debts to players, staff, and creditors.'},
+  {id:'ef41',year:2023,club:'Swansea City',acquirer:'Andy Coleman consortium',nationality:'Welsh / American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'~£38M',type:'full',typeBadge:'b-full',notes:'Andy Coleman and partners acquired Swansea from Kaplan and Levien, who had been unable to return the club to the Premier League in six Championship seasons. The deal ended the club\'s US ownership era and the Supporters\' Trust retained its stake under new management.'},
+  {id:'ef42',year:2023,club:'Cambridge United',acquirer:'Paul Barry',nationality:'American',league:'league1',leagueLabel:'League One',leagueBadge:'b-broadcast',stake:'majority',value:'N/D',type:'majority',typeBadge:'b-majority',notes:'American businessman Paul Barry became majority owner of Cambridge United, continuing the pattern of US investors targeting lower-division English clubs as cost-efficient entry points into the football ownership ecosystem.'},
+  {id:'ef43',year:2024,club:'Everton',acquirer:'The Friedkin Group',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'100%',value:'£400M+',type:'full',typeBadge:'b-full',notes:'Dan Friedkin\'s Friedkin Group acquired full control from Moshiri after years of instability and the threat of administration over a new £800M stadium at Bramley-Moore Dock. Friedkin also owns AS Roma, making this a genuine multi-club play with shared commercial infrastructure.'},
+  {id:'ef44',year:2024,club:'Aston Villa',acquirer:'Atairos Group',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'~20%',value:'N/D',type:'minority',typeBadge:'b-majority',notes:'Comcast-backed US private equity firm Atairos acquired a ~20% minority stake from Sawiris/Edens at a significant valuation premium following Villa\'s Champions League return and European competition performances under Unai Emery.'},
+  {id:'ef45',year:2024,club:'Sheffield United',acquirer:'COH Sports Group',nationality:'Turkish',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'£105M',type:'full',typeBadge:'b-full',notes:'Turkish-backed COH Sports Group acquired Sheffield United from Prince Abdullah at £105M following Premier League relegation. The deal broadens the Turkish and Gulf-adjacent footprint in English football beyond Newcastle\'s PIF ownership.'},
+  {id:'ef46',year:2024,club:'West Brom',acquirer:'Shilen Patel',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'87.8%',value:'£60M',type:'full',typeBadge:'b-full',notes:'American owner Shilen Patel acquired 87.8% from Guochuan Lai in a £60M deal, ending eight years of remote Chinese stewardship that produced two relegations from the Premier League. Patel has committed to rebuilding infrastructure and management for a Premier League push.'},
+  {id:'ef47',year:2024,club:'Reading',acquirer:'Rob Couhig',nationality:'American',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'majority',value:'N/D',type:'full',typeBadge:'b-full',notes:'Louisiana attorney and former Wycombe Wanderers owner Rob Couhig acquired Reading from Dai Yongge after years of financial mismanagement, multiple points deductions for financial rules breaches, and relegation from the Championship to League One.'},
+  {id:'ef48',year:2024,club:'Stoke City',acquirer:'Coates Family Restructure',nationality:'British',league:'championship',leagueLabel:'Championship',leagueBadge:'b-partial',stake:'100%',value:'N/D',type:'full',typeBadge:'b-full',notes:'Stoke City was formally divested from the bet365 corporate structure, with the Coates family taking direct personal ownership rather than holding the club through a betting subsidiary. The restructuring responded to EFL scrutiny over gambling company-affiliated ownership and clarified the club\'s governance framework.'},
+  {id:'ef49',year:2025,club:'Crystal Palace',acquirer:'Woody Johnson',nationality:'American',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'~45%',value:'~£190M',type:'minority',typeBadge:'b-majority',notes:'New York Jets owner Woody Johnson acquired John Textor\'s ~45% Crystal Palace stake for approximately £190M, resolving FA multi-club conflict issues created by Textor\'s simultaneous ownership of Lyon. Johnson joins Steve Parish, Josh Harris, and David Blitzer in the Palace ownership structure.'},
+  {id:'ef50',year:2018,club:'Leicester City',acquirer:'Aiyawatt Srivaddhanaprabha',nationality:'Thai',league:'premier',leagueLabel:'Premier League',leagueBadge:'b-epl',stake:'majority',value:'N/D',type:'full',typeBadge:'b-full',notes:'Following the death of Vichai Srivaddhanaprabha in a helicopter crash in October 2018, son Aiyawatt ("Top") Srivaddhanaprabha assumed majority control and the chairmanship through King Power Group. The leadership transition was seamless and Leicester reached the Europa Conference League final in 2021, winning the FA Cup under Brendan Rodgers.'}
+];
+
+let eflFilter='all';
+
+function setEflFilter(f,el){
+  eflFilter=f;
+  document.querySelectorAll('#efl-filter-group .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderEflTable();
+}
+
+function renderEflTable(){
+  const data=eflFilter==='all'?eflDeals:eflDeals.filter(d=>d.league===eflFilter);
+  document.getElementById('efl-body').innerHTML=data.map(d=>`
+    <tr onclick="openEflModal(eflDeals.find(x=>x.id==='${d.id}'))">
+      <td style="font-family:var(--mono);color:var(--text2);font-size:11px">${d.year}</td>
+      <td style="font-weight:600;color:var(--text)">${d.club}</td>
+      <td class="hide-mobile"><span class="badge ${d.leagueBadge}" style="font-size:10px">${d.leagueLabel}</span></td>
+      <td style="color:var(--text2)">${d.acquirer}</td>
+      <td class="hide-mobile" style="color:var(--text3);font-size:11px">${d.nationality}</td>
+      <td class="hide-mobile" style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--text2)">${d.stake}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:600;color:${d.value==='N/D'?'var(--text3)':'var(--amber)'}">${d.value}</td>
+      <td style="text-align:right"><span class="badge ${d.typeBadge}" style="font-size:10px">${d.type==='full'?'Full':'Majority'===d.type?'Majority':'Minority'}</span></td>
+    </tr>
+  `).join('');
+}
+
+function openEflModal(d){
+  if(!d) return;
+  openModal(`
+    <div class="modal-entity">${d.club}</div>
+    <div class="modal-badges">
+      <span class="badge ${d.leagueBadge}">${d.leagueLabel}</span>
+      <span class="badge ${d.typeBadge}">${d.stake} stake</span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:4px">${d.year}</span>
+    </div>
+    <div class="modal-amount" style="font-size:26px;font-family:var(--mono)">${d.value}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${d.type==='full'?'Full acquisition':'Minority investment'} &middot; ${d.nationality} capital</div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Acquirer</div><div class="modal-fv">${d.acquirer}</div></div>
+      <div class="modal-field"><div class="modal-fk">Nationality</div><div class="modal-fv">${d.nationality}</div></div>
+      <div class="modal-field"><div class="modal-fk">Stake Acquired</div><div class="modal-fv">${d.stake}</div></div>
+      <div class="modal-field"><div class="modal-fk">Deal Year</div><div class="modal-fv">${d.year}</div></div>
+    </div>
+    <div class="modal-notes">${d.notes}</div>
+  `);
+}
+
 let peFilter='all';
 
 function setPeFilter(f,el){
@@ -1129,6 +1268,7 @@ document.getElementById('main-nav').addEventListener('click', e=>{
   if(e.target.dataset.page==='market' && mainChart) setTimeout(()=>mainChart.resize(),50);
   if(e.target.dataset.page==='euro') setTimeout(()=>{ if(!euroChart) initEuroChart(); else euroChart.resize(); },50);
   if(e.target.dataset.page==='rwa') setTimeout(()=>{ if(rwaTab==='chart'){ if(!rwaChart) initRwaChart(); else rwaChart.resize(); }},50);
+  if(e.target.dataset.page==='efl') renderEflTable();
 });
 
 // ── CHART PLUGINS ────────────────────────────────────────────────────────────
@@ -1643,6 +1783,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   renderRwaTable();
   renderRwaActivity();
   renderPeTable();
+  // efl renders on demand (lazy)
 });
 </script>
 </body>

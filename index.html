@@ -74,6 +74,9 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead{position:sticky;top:0;z-index:5;background:var(--panel)}
 th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--text2)}
+th[data-sort]{cursor:pointer}
+th.th-asc::after{content:' ▴';color:var(--amber);font-size:8px;vertical-align:middle}
+th.th-desc::after{content:' ▾';color:var(--amber);font-size:8px;vertical-align:middle}
 td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 tbody tr{transition:background .08s;cursor:pointer}
 tbody tr:hover{background:var(--card)}
@@ -300,14 +303,14 @@ tbody tr:last-child td{border-bottom:none}
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr>
-            <th onclick="sortFranchise('year')">Year</th>
-            <th onclick="sortFranchise('franchise')">Franchise</th>
+          <thead id="franchise-thead"><tr>
+            <th data-sort="year" onclick="sortFranchise('year')">Year</th>
+            <th data-sort="franchise" onclick="sortFranchise('franchise')">Franchise</th>
             <th>League</th><th>Type</th>
-            <th onclick="sortFranchise('buyer')">Buyer</th>
-            <th onclick="sortFranchise('val')" style="text-align:right">Impl. Val.</th>
+            <th data-sort="buyer" onclick="sortFranchise('buyer')">Buyer</th>
+            <th data-sort="val" onclick="sortFranchise('val')" style="text-align:right">Impl. Val.</th>
             <th style="text-align:right">Stake</th>
-            <th onclick="sortFranchise('prem')" style="text-align:right">vs Lg Avg</th>
+            <th data-sort="prem" onclick="sortFranchise('prem')" style="text-align:right">vs Lg Avg</th>
           </tr></thead>
           <tbody id="franchise-body"></tbody>
         </table>
@@ -349,15 +352,15 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div class="tbl-wrap" style="padding-top:0;flex:1;min-height:0;overflow-y:auto">
           <table id="euro-club-table">
-            <thead>
+            <thead id="euro-thead">
               <tr>
-                <th style="width:50px">Year</th>
-                <th style="width:180px">Club</th>
-                <th style="width:140px">League</th>
-                <th style="width:110px">Type</th>
-                <th>Investor</th>
-                <th style="text-align:right;width:110px">Amount</th>
-                <th style="text-align:right;width:120px">Stake</th>
+                <th data-sort="year" onclick="sortEuro('year')" style="width:50px">Year</th>
+                <th data-sort="club" onclick="sortEuro('club')" style="width:180px">Club</th>
+                <th data-sort="league" onclick="sortEuro('league')" style="width:140px">League</th>
+                <th data-sort="type" onclick="sortEuro('type')" style="width:110px">Type</th>
+                <th data-sort="investor" onclick="sortEuro('investor')">Investor</th>
+                <th data-sort="amountNum" onclick="sortEuro('amountNum')" style="text-align:right;width:110px">Amount</th>
+                <th data-sort="stake" onclick="sortEuro('stake')" style="text-align:right;width:120px">Stake</th>
               </tr>
             </thead>
             <tbody id="euro-club-body"></tbody>
@@ -379,8 +382,17 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Year</th><th>Entity</th><th>League</th><th>Investor / Buyer</th><th>Asset Type</th><th style="text-align:right">Total Value</th><th>Duration</th><th>Status</th></tr></thead>
+        <table id="media-table">
+          <thead id="media-thead"><tr>
+            <th data-sort="year" onclick="sortMedia('year')">Year</th>
+            <th data-sort="entity" onclick="sortMedia('entity')">Entity</th>
+            <th data-sort="league" onclick="sortMedia('league')">League</th>
+            <th data-sort="investor" onclick="sortMedia('investor')">Investor / Buyer</th>
+            <th data-sort="type" onclick="sortMedia('type')">Asset Type</th>
+            <th data-sort="valueNum" onclick="sortMedia('valueNum')" style="text-align:right">Total Value</th>
+            <th data-sort="duration" onclick="sortMedia('duration')">Duration</th>
+            <th data-sort="status" onclick="sortMedia('status')">Status</th>
+          </tr></thead>
           <tbody id="media-body"></tbody>
         </table>
       </div>
@@ -431,15 +443,15 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="tbl-wrap" style="padding-top:12px">
-        <table>
-          <thead><tr>
-            <th style="width:50px">Year</th>
-            <th style="width:200px">Entity</th>
-            <th style="width:120px">Sport</th>
-            <th>Investor</th>
-            <th style="width:110px">Type</th>
-            <th style="text-align:right;width:120px">Value</th>
-            <th style="text-align:right;width:90px">Stake</th>
+        <table id="alt-table">
+          <thead id="alt-thead"><tr>
+            <th data-sort="year" onclick="sortAlt('year')" style="width:50px">Year</th>
+            <th data-sort="entity" onclick="sortAlt('entity')" style="width:200px">Entity</th>
+            <th data-sort="sport" onclick="sortAlt('sport')" style="width:120px">Sport</th>
+            <th data-sort="investor" onclick="sortAlt('investor')">Investor</th>
+            <th data-sort="type" onclick="sortAlt('type')" style="width:110px">Type</th>
+            <th data-sort="valueNum" onclick="sortAlt('valueNum')" style="text-align:right;width:120px">Value</th>
+            <th data-sort="stake" onclick="sortAlt('stake')" style="text-align:right;width:90px">Stake</th>
           </tr></thead>
           <tbody id="alt-body"></tbody>
         </table>
@@ -473,15 +485,15 @@ tbody tr:last-child td{border-bottom:none}
           </div>
         </div>
         <div class="tbl-wrap">
-          <table>
-            <thead><tr>
-              <th style="width:70px">Ticker</th>
-              <th style="width:160px">Protocol</th>
-              <th style="width:110px">Category</th>
-              <th style="text-align:right;width:90px">Price</th>
-              <th style="text-align:right;width:100px">Mkt Cap</th>
-              <th style="text-align:right;width:120px">TVL / Loans</th>
-              <th style="text-align:right;width:70px">24h</th>
+          <table id="rwa-table">
+            <thead id="rwa-thead"><tr>
+              <th data-sort="ticker" onclick="sortRwa('ticker')" style="width:70px">Ticker</th>
+              <th data-sort="name" onclick="sortRwa('name')" style="width:160px">Protocol</th>
+              <th data-sort="typeLabel" onclick="sortRwa('typeLabel')" style="width:110px">Category</th>
+              <th data-sort="priceNum" onclick="sortRwa('priceNum')" style="text-align:right;width:90px">Price</th>
+              <th data-sort="mktCap" onclick="sortRwa('mktCap')" style="text-align:right;width:100px">Mkt Cap</th>
+              <th data-sort="tvlNum" onclick="sortRwa('tvlNum')" style="text-align:right;width:120px">TVL / Loans</th>
+              <th data-sort="changeNum" onclick="sortRwa('changeNum')" style="text-align:right;width:70px">24h</th>
               <th class="hide-mobile" style="width:200px">Exchanges</th>
             </tr></thead>
             <tbody id="rwa-body"></tbody>
@@ -522,12 +534,12 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="tbl-wrap" style="overflow-y:auto;flex:1">
-        <table>
-          <thead><tr>
-            <th style="width:28px">#</th>
-            <th>Firm</th>
+        <table id="pe-table">
+          <thead id="pe-thead"><tr>
+            <th data-sort="rank" onclick="sortPe('rank')" style="width:28px">#</th>
+            <th data-sort="name" onclick="sortPe('name')">Firm</th>
             <th class="hide-mobile">Type</th>
-            <th style="text-align:right">Deals in DB</th>
+            <th data-sort="dealCount" onclick="sortPe('dealCount')" style="text-align:right">Deals in DB</th>
             <th style="text-align:right" class="hide-mobile">AUM</th>
             <th>League Presence</th>
             <th style="text-align:right">Status</th>
@@ -560,14 +572,14 @@ tbody tr:last-child td{border-bottom:none}
       </div>
       <div class="tbl-wrap" style="overflow-y:auto;flex:1">
         <table id="efl-table">
-          <thead><tr>
-            <th style="width:44px">Year</th>
-            <th>Club</th>
+          <thead id="efl-thead"><tr>
+            <th data-sort="year" onclick="sortEfl('year')" style="width:44px">Year</th>
+            <th data-sort="club" onclick="sortEfl('club')">Club</th>
             <th class="hide-mobile">League</th>
-            <th>Acquirer</th>
-            <th class="hide-mobile">Nationality</th>
+            <th data-sort="acquirer" onclick="sortEfl('acquirer')">Acquirer</th>
+            <th data-sort="nationality" onclick="sortEfl('nationality')" class="hide-mobile">Nationality</th>
             <th style="text-align:right" class="hide-mobile">Stake</th>
-            <th style="text-align:right">Value</th>
+            <th data-sort="valueNum" onclick="sortEfl('valueNum')" style="text-align:right">Value</th>
             <th style="text-align:right">Type</th>
           </tr></thead>
           <tbody id="efl-body"></tbody>
@@ -905,6 +917,39 @@ let chartFilter='all', franchiseFilter='all', mediaFilter='all', tokenFilter='al
 let rwaFilter='all', rwaTab='overview', rwaChart=null;
 let mainChart=null, euroChart=null;
 let franchiseSort={col:'year',dir:-1};
+let euroSort={col:'year',dir:-1};
+let mediaSort={col:'year',dir:-1};
+let altSort={col:'year',dir:-1};
+let rwaSort={col:'mktCap',dir:-1};
+let peSort={col:'dealCount',dir:-1};
+let eflSort={col:'year',dir:-1};
+
+// ── SORT HELPERS ─────────────────────────────────────────────────────────────
+// Parse a value string like "€305M", "£4.25B", "$1.2B" to a numeric millions figure
+function parseValStr(s){
+  if(!s||s==='N/D'||s==='—'||s==='N/A') return -1;
+  const clean=s.replace(/[£€$,~]/g,'');
+  const m=clean.match(/([\d.]+)\s*([BMKbmk]?)/);
+  if(!m) return -1;
+  let n=parseFloat(m[1]);
+  const suf=(m[2]||'').toUpperCase();
+  if(suf==='B') n*=1000;
+  if(suf==='K') n/=1000;
+  return n;
+}
+// Apply ▴/▾ indicators to a thead by matching data-sort to sort state
+function applySort(theadId,state){
+  document.querySelectorAll('#'+theadId+' th[data-sort]').forEach(th=>{
+    th.classList.remove('th-asc','th-desc');
+    if(th.dataset.sort===state.col) th.classList.add(state.dir===1?'th-asc':'th-desc');
+  });
+}
+// Generic two-value comparator (strings → locale, numbers → arithmetic)
+function cmp(a,b,dir){
+  if(a===null||a===undefined) a=-Infinity;
+  if(b===null||b===undefined) b=-Infinity;
+  return(typeof a==='string'?a.localeCompare(b):a-b)*dir;
+}
 
 // ── DEAL COUNT ───────────────────────────────────────────────────────────────
 const totalDeals = franchiseDeals.length + euroDeals.length + mediaDeals.length + tokenDeals.length;
@@ -1169,8 +1214,11 @@ function setEflFilter(f,el){
 }
 
 function renderEflTable(){
-  const data=eflFilter==='all'?eflDeals:eflDeals.filter(d=>d.league===eflFilter);
-  document.getElementById('efl-body').innerHTML=data.map(d=>`
+  const base=eflFilter==='all'?eflDeals:eflDeals.filter(d=>d.league===eflFilter);
+  const aug=base.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[eflSort.col],b[eflSort.col],eflSort.dir));
+  applySort('efl-thead',eflSort);
+  document.getElementById('efl-body').innerHTML=aug.map(d=>`
     <tr onclick="openEflModal(eflDeals.find(x=>x.id==='${d.id}'))">
       <td style="font-family:var(--mono);color:var(--text2);font-size:11px">${d.year}</td>
       <td style="font-weight:600;color:var(--text)">${d.club}</td>
@@ -1182,6 +1230,11 @@ function renderEflTable(){
       <td style="text-align:right"><span class="badge ${d.typeBadge}" style="font-size:10px">${d.type==='full'?'Full':'Majority'===d.type?'Majority':'Minority'}</span></td>
     </tr>
   `).join('');
+}
+function sortEfl(col){
+  eflSort.dir=eflSort.col===col?-eflSort.dir:-1;
+  eflSort.col=col;
+  renderEflTable();
 }
 
 function openEflModal(d){
@@ -1215,8 +1268,10 @@ function setPeFilter(f,el){
 }
 
 function renderPeTable(){
-  const data=peFilter==='all'?peInvestors:peInvestors.filter(d=>d.type===peFilter);
-  document.getElementById('pe-body').innerHTML=data.map((d,i)=>`
+  const base=peFilter==='all'?peInvestors:peInvestors.filter(d=>d.type===peFilter);
+  const sorted=[...base].sort((a,b)=>cmp(a[peSort.col],b[peSort.col],peSort.dir));
+  applySort('pe-thead',peSort);
+  document.getElementById('pe-body').innerHTML=sorted.map((d,i)=>`
     <tr onclick="openPeModal(peInvestors.find(x=>x.id==='${d.id}'))">
       <td style="color:var(--text3);font-family:var(--mono);font-size:11px">${d.rank}</td>
       <td>
@@ -1233,6 +1288,11 @@ function renderPeTable(){
       <td style="text-align:right"><span class="badge ${d.statusBadge}">${d.status}</span></td>
     </tr>
   `).join('');
+}
+function sortPe(col){
+  peSort.dir=peSort.col===col?-peSort.dir:-1;
+  peSort.col=col;
+  renderPeTable();
 }
 
 function openPeModal(d){
@@ -1439,9 +1499,12 @@ function renderEuroClubTable(){
     ? clubDeals
     : clubDeals.filter(d => d.leagueBadge === leagueMap[euroLeague]);
 
-  document.getElementById('euro-club-body').innerHTML = filtered
-    .sort((a,b) => b.year - a.year)
-    .map(d => `
+  // augment with numeric sort key for amount
+  const aug = filtered.map(d=>({...d, amountNum:parseValStr(d.amount)}));
+  aug.sort((a,b)=>cmp(a[euroSort.col],b[euroSort.col],euroSort.dir));
+  applySort('euro-thead',euroSort);
+
+  document.getElementById('euro-club-body').innerHTML = aug.map(d => `
       <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
         <td class="col-dim">${d.year}</td>
         <td><div class="col-name">${d.club}</div><div class="col-sub">${d.country}</div></td>
@@ -1452,13 +1515,19 @@ function renderEuroClubTable(){
         <td style="text-align:right" class="col-dim">${d.stake}</td>
       </tr>`).join('');
 }
+function sortEuro(col){
+  euroSort.dir=euroSort.col===col?-euroSort.dir:-1;
+  euroSort.col=col;
+  renderEuroClubTable();
+}
 
 
 
 // ── FRANCHISE TABLE ──────────────────────────────────────────────────────────
 function renderFranchiseTable(){
   let data=franchiseDeals.filter(t=>franchiseFilter==='all'||t.league.toLowerCase()===franchiseFilter);
-  data=[...data].sort((a,b)=>{const av=a[franchiseSort.col],bv=b[franchiseSort.col];return(typeof av==='string'?av.localeCompare(bv):av-bv)*franchiseSort.dir;});
+  data=[...data].sort((a,b)=>cmp(a[franchiseSort.col],b[franchiseSort.col],franchiseSort.dir));
+  applySort('franchise-thead',franchiseSort);
   document.getElementById('franchise-body').innerHTML=data.map(t=>{
     const ps=(t.prem>=0?'+':'')+t.prem.toFixed(1)+'%';
     const pc=t.prem>5?'col-green':t.prem<-5?'col-red':'col-amber';
@@ -1490,7 +1559,10 @@ function sortFranchise(col){
 function renderMediaTable(filter){
   mediaFilter=filter||mediaFilter;
   let data=mediaDeals.filter(d=>mediaFilter==='all'||d.sport===mediaFilter);
-  document.getElementById('media-body').innerHTML=data.sort((a,b)=>b.year-a.year).map(d=>`
+  const aug=data.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[mediaSort.col],b[mediaSort.col],mediaSort.dir));
+  applySort('media-thead',mediaSort);
+  document.getElementById('media-body').innerHTML=aug.map(d=>`
     <tr onclick="openMediaModal(mediaDeals.find(x=>x.id==='${d.id}'))">
       <td class="col-dim">${d.year}</td>
       <td><div class="col-name">${d.entity}</div></td>
@@ -1506,6 +1578,11 @@ function setMediaFilter(f,btn){
   document.querySelectorAll('#media-filter .pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   renderMediaTable(f);
+}
+function sortMedia(col){
+  mediaSort.dir=mediaSort.col===col?-mediaSort.dir:-1;
+  mediaSort.col=col;
+  renderMediaTable();
 }
 
 // ── TOKEN TABLE ──────────────────────────────────────────────────────────────
@@ -1563,8 +1640,11 @@ function openTokenModal(d){
 // ── ALT SPORTS ───────────────────────────────────────────────────────────────
 const altCatBadge = {f1:'b-nfl', golf:'b-green', rugby:'b-majority', women:'b-purple', college:'b-amber', emerging:'b-pe'};
 function renderAltTable(){
-  const data = altFilter==='all' ? altDeals : altDeals.filter(d=>d.category===altFilter);
-  document.getElementById('alt-body').innerHTML = data.map(d=>`
+  const base = altFilter==='all' ? altDeals : altDeals.filter(d=>d.category===altFilter);
+  const aug=base.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[altSort.col],b[altSort.col],altSort.dir));
+  applySort('alt-thead',altSort);
+  document.getElementById('alt-body').innerHTML = aug.map(d=>`
     <tr onclick="openAltModal(altDeals.find(x=>x.id==='${d.id}'))">
       <td class="col-dim">${d.year}</td>
       <td><div class="col-name">${d.entity}</div></td>
@@ -1579,6 +1659,11 @@ function setAltFilter(f,btn){
   altFilter=f;
   document.querySelectorAll('#alt-filter .pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
+  renderAltTable();
+}
+function sortAlt(col){
+  altSort.dir=altSort.col===col?-altSort.dir:-1;
+  altSort.col=col;
   renderAltTable();
 }
 function openAltModal(d){
@@ -1616,8 +1701,21 @@ function setRwaFilter(f,btn){
   renderRwaTable();
 }
 function renderRwaTable(){
-  const data=rwaFilter==='all'?rwaCompetitors:rwaCompetitors.filter(d=>d.type===rwaFilter);
-  document.getElementById('rwa-body').innerHTML=data.map(d=>{
+  const base=rwaFilter==='all'?rwaCompetitors:rwaCompetitors.filter(d=>d.type===rwaFilter);
+  // augment with numeric sort keys
+  const aug=base.map(d=>({
+    ...d,
+    priceNum: parseFloat((d.price||'0').replace(/[^0-9.]/g,'')),
+    tvlNum:   parseValStr(d.tvlLabel),
+    changeNum:parseFloat((d.change24h||'0').replace(/[^0-9.\-]/g,''))*(d.changePos?1:-1)
+  }));
+  aug.sort((a,b)=>cmp(
+    a[rwaSort.col]===null?-Infinity:a[rwaSort.col],
+    b[rwaSort.col]===null?-Infinity:b[rwaSort.col],
+    rwaSort.dir
+  ));
+  applySort('rwa-thead',rwaSort);
+  document.getElementById('rwa-body').innerHTML=aug.map(d=>{
     const chgClass=d.changePos?'col-green':'col-red';
     return`<tr onclick="openRwaModal(rwaCompetitors.find(x=>x.id==='${d.id}'))">
       <td><div class="col-name" style="font-family:var(--mono);letter-spacing:-.3px">${d.ticker}</div><div class="col-sub">${d.name}</div></td>
@@ -1629,6 +1727,11 @@ function renderRwaTable(){
       <td class="col-dim hide-mobile" style="font-size:11px">${d.exchanges}</td>
     </tr>`;
   }).join('');
+}
+function sortRwa(col){
+  rwaSort.dir=rwaSort.col===col?-rwaSort.dir:-1;
+  rwaSort.col=col;
+  renderRwaTable();
 }
 function renderRwaActivity(){
   document.getElementById('rwa-activity-feed').innerHTML=rwaAnnouncements.map(a=>`

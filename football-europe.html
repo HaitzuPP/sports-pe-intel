@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Football: Europe — Sports PE Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -228,10 +228,7 @@ tbody tr:last-child td{border-bottom:none}
 }
 </style>
 
-<style>
-/* Multi-page nav: anchor tags styled as buttons */
-.nav-tab { text-decoration: none; display: inline-flex; align-items: center; }
-</style>
+<style>.nav-tab{text-decoration:none;display:inline-flex;align-items:center}</style>
 </head>
 <body>
 <div class="app">
@@ -239,7 +236,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
     <nav class="nav" id="main-nav">
       <a class="nav-tab" href="index.html">Market</a>
-      <a class="nav-tab active" href="football-europe.html">Football: Europe</a>
+      <a class="nav-tab  active" href="football-europe.html">Football: Europe</a>
       <a class="nav-tab" href="football-uk.html">Football: UK</a>
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
@@ -339,27 +336,13 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 </div>
-
 <div class="modal-backdrop" id="modal" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeModal()">&#x2715;</button>
     <div id="modal-inner"></div>
   </div>
 </div>
-
 <script>
-
-const nflAvg = [{x:2019,y:2.5},{x:2020,y:3.0},{x:2021,y:3.5},{x:2022,y:4.2},{x:2023,y:4.8},{x:2024,y:5.6},{x:2025,y:7.13}];
-const nbaAvg = [{x:2019,y:1.9},{x:2020,y:2.1},{x:2021,y:2.3},{x:2022,y:2.58},{x:2023,y:3.5},{x:2024,y:4.0},{x:2025,y:5.51}];
-// Projected (2025 anchor = last actual, ~15% NFL CAGR / ~15-17% NBA CAGR driven by $76B broadcast)
-const nflProj = [{x:2025,y:7.13},{x:2026,y:8.20},{x:2027,y:9.43},{x:2028,y:10.85}];
-const nbaProj = [{x:2025,y:5.51},{x:2026,y:6.55},{x:2027,y:7.65},{x:2028,y:8.80}];
-
-const eplAvg   = [{x:2016,y:.70},{x:2017,y:.85},{x:2018,y:1.00},{x:2019,y:1.20},{x:2020,y:.85},{x:2021,y:1.05},{x:2022,y:1.50},{x:2023,y:1.80},{x:2024,y:2.15},{x:2025,y:2.60}];
-const laligaAvg= [{x:2016,y:.35},{x:2017,y:.42},{x:2018,y:.50},{x:2019,y:.65},{x:2020,y:.45},{x:2021,y:.55},{x:2022,y:.78},{x:2023,y:1.00},{x:2024,y:1.35},{x:2025,y:1.75}];
-const serieaAvg= [{x:2016,y:.22},{x:2017,y:.28},{x:2018,y:.35},{x:2019,y:.45},{x:2020,y:.30},{x:2021,y:.42},{x:2022,y:.58},{x:2023,y:.75},{x:2024,y:.95},{x:2025,y:1.25}];
-const ligue1Avg= [{x:2016,y:.15},{x:2017,y:.18},{x:2018,y:.22},{x:2019,y:.30},{x:2020,y:.22},{x:2021,y:.28},{x:2022,y:.40},{x:2023,y:.55},{x:2024,y:.75},{x:2025,y:1.00}];
-
 const franchiseDeals = [
   {id:1, year:2020,xp:2020.0,franchise:'Utah Jazz',league:'NBA',badge:'b-nba',typeLabel:'Majority',typeBadge:'b-majority',buyer:'Ryan Smith (Qualtrics)',val:1.66,currency:'$',stake:'80%',lgAvg:2.10,prem:-21.0,source:'https://www.sportico.com/business/sales/2020/utah-jazz-sale-ryan-smith-1234612100/',notes:'Miller family ends 35-year ownership. Ryan Smith buys 80% at $1.66B implied. Arctos Sports Partners subsequently acquires a minority PE stake within 12 months, setting the stage for Arctos\'s broader sports expansion.'},
   {id:2, year:2021,xp:2021.0,franchise:'Utah Jazz',league:'NBA',badge:'b-nba',typeLabel:'PE Entry',typeBadge:'b-pe',buyer:'Arctos Partners',val:1.80,currency:'$',stake:'Minority',lgAvg:2.30,prem:-21.7,source:'https://www.sportico.com/business/finance/2021/arctos-sports-partners-nba-1234621000/',notes:'Arctos acquires minority stake in the Jazz within the restructured Ryan Smith ownership. First major NBA PE deployment for Arctos, which becomes the most active multi-league sports PE investor globally.'},
@@ -2102,32 +2085,16 @@ function openMediaModal(d){
   `);
 }
 
-// ── CLOCK ────────────────────────────────────────────────────────────────────
-function tick(){ const n=new Date(),p=x=>String(x).padStart(2,'0'); document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds()); }
-setInterval(tick,1000); tick();
 
-// ── BOOT ─────────────────────────────────────────────────────────────────────
+// ── CLOCK ───────────────────────────────────────────────────────────────────
+function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());}
+setInterval(tick,1000);tick();
+// ── BOOT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  initMainChart();
-  renderFranchiseTable();
+  document.getElementById("deal-count").textContent="("+euroDeals.length+" club deals)";
   renderEuroClubTable();
   renderCeurTable2();
-  renderAltTable();
-  renderMediaTable();
-  renderTokenTable();
-  renderPeTable();
-
-
-// ── CLOCK ────────────────────────────────────────────────────────────────────
-function tick(){ const n=new Date(),p=x=>String(x).padStart(2,'0'); document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds()); }
-setInterval(tick,1000); tick();
-
-// ── BOOT ─────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById("deal-count").textContent = "("+euroDeals.length+" club deals)";
-  renderEuroClubTable();
-  renderCeurTable2();
-  setTimeout(()=>{ initEuroChart(); }, 50);
+  setTimeout(()=>{initEuroChart();},50);
 });
 </script>
 </body>

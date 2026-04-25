@@ -904,6 +904,7 @@ const tokenDeals = [
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let chartFilter='all', franchiseFilter='all', mediaFilter='all', tokenFilter='all', altFilter='all';
+let eflFilter='all';
 let mainChart=null, euroChart=null;
 let franchiseSort={col:'year',dir:-1};
 let euroSort={col:'year',dir:-1};
@@ -1019,6 +1020,651 @@ document.getElementById('main-nav').addEventListener('click', e=>{
     setTimeout(()=>{ if(eflVolChart) eflVolChart.resize(); if(eflValChart) eflValChart.resize(); if(eflNatChart) eflNatChart.resize(); },50);
   }
 });
+
+function setEflFilter(f,el){
+  eflFilter=f;
+  document.querySelectorAll('#efl-filter-row .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderEflTable();
+}
+
+function renderEflTable(){
+  const base=eflFilter==='all'?eflDeals:eflDeals.filter(d=>d.league===eflFilter);
+  const aug=base.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[eflSort.col],b[eflSort.col],eflSort.dir));
+  applySort('efl-thead',eflSort);
+  document.getElementById('efl-body').innerHTML=aug.map(d=>`
+    <tr onclick="openEflModal(eflDeals.find(x=>x.id==='${d.id}'))">
+      <td style="font-family:var(--mono);color:var(--text2);font-size:11px">${d.year}</td>
+      <td style="font-weight:600;color:var(--text)">${d.club}</td>
+      <td class="hide-mobile"><span class="badge ${d.leagueBadge}" style="font-size:10px">${d.leagueLabel}</span></td>
+      <td style="color:var(--text2)">${d.acquirer}</td>
+      <td class="hide-mobile" style="color:var(--text3);font-size:11px">${d.nationality}</td>
+      <td class="hide-mobile" style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--text2)">${d.stake}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:600;color:${d.value==='N/D'?'var(--text3)':'var(--amber)'}">${d.value}</td>
+      <td style="text-align:right"><span class="badge ${d.typeBadge}" style="font-size:10px">${d.type==='full'?'Full':'Majority'===d.type?'Majority':'Minority'}</span></td>
+    </tr>
+  `).join('');
+}
+function sortEfl(col){
+  eflSort.dir=eflSort.col===col?-eflSort.dir:-1;
+  eflSort.col=col;
+  renderEflTable();
+}
+
+// ── EFL CHART VIEW ────────────────────────────────────────────────────────────
+let eflVolChart=null, eflValChart=null, eflNatChart=null;
+
+function setEflTab(tab, el){
+  document.querySelectorAll('#efl-view-group .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const isChart = tab==='chart';
+  document.getElementById('efl-sec-table').style.display = isChart ? 'none' : 'flex';
+  document.getElementById('efl-sec-chart').style.display = isChart ? 'block' : 'none';
+  if(isChart) setTimeout(initEflCharts, 40);
+}
+
+function initEflCharts(){
+  _initEflVolChart();
+  _initEflValChart();
+  _initEflNatChart();
+  _initEflUsChart();
+  _initEflTypeChart();
+  _initEflLeagueValChart();
+  _initEflChurnTable();
+}
+
+// ── Chart 1: Stacked bar — deals per year by league tier ─────────────────────
+function _initEflVolChart(){
+  const ctx = document.getElementById('efl-vol-chart');
+  if(!ctx) return;
+  if(eflVolChart){ eflVolChart.resize(); return; }
+  const years=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  const cnt={};
+  years.forEach(y=>cnt[y]={premier:0,championship:0,league1:0,lower:0});
+  eflDeals.forEach(d=>{
+    const b=cnt[d.year];
+    if(!b) return;
+    if(d.league==='premier') b.premier++;
+    else if(d.league==='championship') b.championship++;
+    else if(d.league==='league1') b.league1++;
+    else b.lower++;
+  });
+  const grid='rgba(23,40,64,1)';
+  eflVolChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:years.map(String),
+      datasets:[
+        {label:'Premier League',data:years.map(y=>cnt[y].premier),backgroundColor:'rgba(104,112,184,.8)',borderColor:'rgba(104,112,184,1)',borderWidth:1},
+        {label:'Championship',data:years.map(y=>cnt[y].championship),backgroundColor:'rgba(184,131,42,.8)',borderColor:'rgba(184,131,42,1)',borderWidth:1},
+        {label:'League One',data:years.map(y=>cnt[y].league1),backgroundColor:'rgba(42,143,181,.8)',borderColor:'rgba(42,143,181,1)',borderWidth:1},
+        {label:'Lge Two / National',data:years.map(y=>cnt[y].lower),backgroundColor:'rgba(42,159,99,.6)',borderColor:'rgba(42,159,99,1)',borderWidth:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:t=>'Year: '+t[0].label,
+          label:t=>` ${t.dataset.label}: ${t.parsed.y} deal${t.parsed.y!==1?'s':''}`
+        }}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',font:{family:'Inter,system-ui,sans-serif',size:11}}},
+        y:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',stepSize:1,font:{size:11}},
+           title:{display:true,text:'Deals',color:'#344d62',font:{size:10}}}
+      }
+    }
+  });
+}
+
+// ── Chart 2: Horizontal bar — disclosed deal values (log scale) ───────────────
+function _initEflValChart(){
+  const ctx = document.getElementById('efl-val-chart');
+  if(!ctx) return;
+  if(eflValChart){ eflValChart.resize(); return; }
+  const leagueCol={
+    premier:'rgba(104,112,184,.8)',
+    championship:'rgba(184,131,42,.8)',
+    league1:'rgba(42,143,181,.8)',
+    league2:'rgba(42,159,99,.6)',
+    national:'rgba(42,159,99,.6)'
+  };
+  const disclosed=eflDeals
+    .map(d=>({...d,vn:parseValStr(d.value)}))
+    .filter(d=>d.vn>0)
+    .sort((a,b)=>a.vn-b.vn); // ascending so biggest is at top of horizontal bar
+  const labels=disclosed.map(d=>`${d.club} '${String(d.year).slice(2)}`);
+  const vals=disclosed.map(d=>d.vn);
+  const bgColors=disclosed.map(d=>leagueCol[d.league]||'rgba(100,120,140,.6)');
+  const grid='rgba(23,40,64,1)';
+  eflValChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Deal Value',data:vals,backgroundColor:bgColors,borderColor:bgColors.map(c=>c.replace('.8','1').replace('.6','1')),borderWidth:1}]},
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:t=>{
+            const v=t.parsed.x;
+            return ' £'+(v>=1000?(v/1000).toFixed(2)+'B':Math.round(v)+'M');
+          }
+        }}
+      },
+      scales:{
+        x:{
+          type:'logarithmic',
+          grid:{color:grid},
+          min:1,
+          ticks:{
+            color:'#637a90',
+            font:{size:10},
+            callback:v=>{
+              if([1,5,10,50,100,500,1000,5000].includes(v))
+                return v>=1000?'£'+(v/1000)+'B':'£'+v+'M';
+              return '';
+            }
+          },
+          title:{display:true,text:'Deal Value (log scale)',color:'#344d62',font:{size:10}}
+        },
+        y:{
+          grid:{display:false},
+          ticks:{color:'#637a90',font:{family:'Inter,system-ui,sans-serif',size:10}}
+        }
+      }
+    }
+  });
+}
+
+// ── Chart 3: Horizontal bar — acquirer nationality breakdown ──────────────────
+function _initEflNatChart(){
+  const ctx = document.getElementById('efl-nat-chart');
+  if(!ctx) return;
+  if(eflNatChart){ eflNatChart.resize(); return; }
+  // Group by simplified nationality category
+  const natMap={};
+  eflDeals.forEach(d=>{
+    const raw=d.nationality;
+    let cat='Other';
+    if(/american|us\b/i.test(raw)) cat='American';
+    else if(/british|welsh/i.test(raw)) cat='British';
+    else if(/chinese/i.test(raw)) cat='Chinese';
+    else if(/saudi|bahrain|gulf|middle east/i.test(raw)) cat='Gulf / Saudi';
+    else if(/thai/i.test(raw)) cat='Thai';
+    else if(/turkish/i.test(raw)) cat='Turkish';
+    else if(/greek/i.test(raw)) cat='Greek';
+    else if(/czech|swiss|danish|italian|german|french|spanish|swedish/i.test(raw)) cat='European';
+    else if(/indonesian/i.test(raw)) cat='Indonesian';
+    natMap[cat]=(natMap[cat]||0)+1;
+  });
+  const sorted=Object.entries(natMap).sort((a,b)=>b[1]-a[1]);
+  const natColors={
+    'American':'rgba(104,112,184,.8)',
+    'British':'rgba(42,159,99,.8)',
+    'Chinese':'rgba(184,131,42,.8)',
+    'Gulf / Saudi':'rgba(42,143,181,.8)',
+    'Thai':'rgba(191,79,79,.7)',
+    'European':'rgba(150,120,180,.7)',
+    'Turkish':'rgba(184,90,42,.7)',
+    'Greek':'rgba(42,100,150,.7)',
+    'Indonesian':'rgba(100,180,120,.7)',
+    'Other':'rgba(80,100,120,.6)'
+  };
+  const grid='rgba(23,40,64,1)';
+  eflNatChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:sorted.map(e=>e[0]),
+      datasets:[{
+        label:'Deals',
+        data:sorted.map(e=>e[1]),
+        backgroundColor:sorted.map(e=>natColors[e[0]]||'rgba(80,100,120,.6)'),
+        borderWidth:0,
+        borderRadius:3
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:t=>` ${t.parsed.x} deal${t.parsed.x!==1?'s':''}`}}
+      },
+      scales:{
+        x:{grid:{color:grid},ticks:{color:'#637a90',stepSize:1,font:{size:11}},
+           title:{display:true,text:'Number of deals',color:'#344d62',font:{size:10}}},
+        y:{grid:{display:false},ticks:{color:'#637a90',font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ── Chart 4: US Capital Surge by Year ────────────────────────────────────────
+let eflUsChart=null;
+function _initEflUsChart(){
+  const ctx = document.getElementById('efl-us-chart');
+  if(!ctx) return;
+  if(eflUsChart){ eflUsChart.resize(); return; }
+  const years=[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  const usCnt={}, otherCnt={};
+  years.forEach(y=>{usCnt[y]=0; otherCnt[y]=0;});
+  eflDeals.forEach(d=>{
+    if(!usCnt.hasOwnProperty(d.year)) return;
+    const isUS = /american|us/i.test(d.nationality) || /danish.american|welsh.*american/i.test(d.nationality);
+    if(isUS) usCnt[d.year]++;
+    else otherCnt[d.year]++;
+  });
+  const grid='rgba(23,40,64,1)';
+  eflUsChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:years.map(String),
+      datasets:[
+        {label:'American',data:years.map(y=>usCnt[y]),backgroundColor:'rgba(104,112,184,.85)',borderColor:'rgba(104,112,184,1)',borderWidth:1},
+        {label:'Other',data:years.map(y=>otherCnt[y]),backgroundColor:'rgba(80,100,120,.55)',borderColor:'rgba(80,100,120,.9)',borderWidth:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:t=>'Year: '+t[0].label,
+          label:t=>` ${t.dataset.label}: ${t.parsed.y} deal${t.parsed.y!==1?'s':''}`
+        }}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',font:{size:11}}},
+        y:{stacked:true,grid:{color:grid},ticks:{color:'#637a90',stepSize:1,font:{size:11}},
+           title:{display:true,text:'Deals',color:'#344d62',font:{size:10}}}
+      }
+    }
+  });
+}
+
+// ── Chart 5: Deal Type Mix (donut) ────────────────────────────────────────────
+let eflTypeChart=null;
+function _initEflTypeChart(){
+  const ctx = document.getElementById('efl-type-chart');
+  if(!ctx) return;
+  if(eflTypeChart){ eflTypeChart.resize(); return; }
+  const counts={full:0,majority:0,minority:0};
+  eflDeals.forEach(d=>{
+    if(d.type==='full') counts.full++;
+    else if(d.type==='majority') counts.majority++;
+    else if(d.type==='minority') counts.minority++;
+  });
+  eflTypeChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Full Acquisition','Majority Stake','Minority Stake'],
+      datasets:[{
+        data:[counts.full,counts.majority,counts.minority],
+        backgroundColor:['rgba(42,159,99,.8)','rgba(184,131,42,.8)','rgba(104,112,184,.8)'],
+        borderColor:['rgba(42,159,99,1)','rgba(184,131,42,1)','rgba(104,112,184,1)'],
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      cutout:'62%',
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{color:'#637a90',font:{size:10},padding:12,boxWidth:10}
+        },
+        tooltip:{callbacks:{
+          label:t=>{
+            const pct=Math.round(t.parsed/eflDeals.length*100);
+            return ` ${t.label}: ${t.parsed} (${pct}%)`;
+          }
+        }}
+      }
+    }
+  });
+}
+
+// ── Chart 5b: Capital Concentration by League (horizontal bar, sum disclosed) ─
+let eflLeagueValChart=null;
+function _initEflLeagueValChart(){
+  const ctx = document.getElementById('efl-league-val-chart');
+  if(!ctx) return;
+  if(eflLeagueValChart){ eflLeagueValChart.resize(); return; }
+  const tiers=[
+    {key:'premier',label:'Premier League',color:'rgba(104,112,184,.85)'},
+    {key:'championship',label:'Championship',color:'rgba(184,131,42,.85)'},
+    {key:'league1',label:'League One',color:'rgba(42,143,181,.85)'},
+    {key:'league2',label:'League Two',color:'rgba(42,159,99,.7)'},
+    {key:'national',label:'National Lg.',color:'rgba(42,159,99,.5)'}
+  ];
+  const sums={};
+  tiers.forEach(t=>sums[t.key]=0);
+  eflDeals.forEach(d=>{
+    const v=parseValStr(d.value);
+    if(v>0 && sums.hasOwnProperty(d.league)) sums[d.league]+=v;
+  });
+  const grid='rgba(23,40,64,1)';
+  eflLeagueValChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:tiers.map(t=>t.label),
+      datasets:[{
+        label:'Disclosed Value (£M)',
+        data:tiers.map(t=>Math.round(sums[t.key])),
+        backgroundColor:tiers.map(t=>t.color),
+        borderWidth:0,
+        borderRadius:3
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:t=>{
+            const v=t.parsed.x;
+            return ' £'+(v>=1000?(v/1000).toFixed(2)+'B':Math.round(v)+'M');
+          }
+        }}
+      },
+      scales:{
+        x:{
+          grid:{color:grid},
+          ticks:{
+            color:'#637a90',font:{size:10},
+            callback:v=>v>=1000?'£'+(v/1000).toFixed(1)+'B':'£'+Math.round(v)+'M'
+          },
+          title:{display:true,text:'Total disclosed value',color:'#344d62',font:{size:10}}
+        },
+        y:{grid:{display:false},ticks:{color:'#637a90',font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ── Chart 6: Ownership Churn Table ────────────────────────────────────────────
+function _initEflChurnTable(){
+  const el=document.getElementById('efl-churn-table');
+  if(!el||el.dataset.built) return;
+  el.dataset.built='1';
+  const clubCounts={};
+  eflDeals.forEach(d=>{
+    if(!clubCounts[d.club]) clubCounts[d.club]={count:0,years:[],league:d.leagueLabel};
+    clubCounts[d.club].count++;
+    clubCounts[d.club].years.push(d.year);
+    clubCounts[d.club].league=d.leagueLabel;
+  });
+  const churned=Object.entries(clubCounts)
+    .filter(([,v])=>v.count>1)
+    .sort((a,b)=>b[1].count-a[1].count);
+  const rows=churned.map(([club,v])=>{
+    const yrs=[...new Set(v.years)].sort();
+    const badge=v.count>=3?'<span style="background:rgba(191,79,79,.15);color:#bf4f4f;border:1px solid rgba(191,79,79,.3);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600">'+v.count+'x</span>':
+                           '<span style="background:rgba(184,131,42,.15);color:#b8832a;border:1px solid rgba(184,131,42,.3);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600">'+v.count+'x</span>';
+    return `<tr>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text)">${club}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2)">${v.league}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2)">${yrs.join(', ')}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right">${badge}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);text-align:left">Club</th>
+      <th style="padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);text-align:left">League</th>
+      <th style="padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);text-align:left">Transaction Years</th>
+      <th style="padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);text-align:right">Count</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function openEflModal(d){
+  if(!d) return;
+  openModal(`
+    <div class="modal-entity">${d.club}</div>
+    <div class="modal-badges">
+      <span class="badge ${d.leagueBadge}">${d.leagueLabel}</span>
+      <span class="badge ${d.typeBadge}">${d.stake} stake</span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:4px">${d.year}</span>
+    </div>
+    <div class="modal-amount" style="font-size:26px;font-family:var(--mono)">${d.value}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${d.type==='full'?'Full acquisition':'Minority investment'} &middot; ${d.nationality} capital</div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Acquirer</div><div class="modal-fv">${d.acquirer}</div></div>
+      <div class="modal-field"><div class="modal-fk">Nationality</div><div class="modal-fv">${d.nationality}</div></div>
+      <div class="modal-field"><div class="modal-fk">Stake Acquired</div><div class="modal-fv">${d.stake}</div></div>
+      <div class="modal-field"><div class="modal-fk">Deal Year</div><div class="modal-fv">${d.year}</div></div>
+    </div>
+    <div class="modal-notes">${d.notes}</div>
+  `);
+}
+
+
+function setPeFilter(f,el){
+  peFilter=f;
+  document.querySelectorAll('#pe-filter-group .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderPeTable();
+}
+
+function renderPeTable(){
+  const base=peFilter==='all'?peInvestors:peInvestors.filter(d=>d.type===peFilter);
+  const sorted=[...base].sort((a,b)=>cmp(a[peSort.col],b[peSort.col],peSort.dir));
+  applySort('pe-thead',peSort);
+  document.getElementById('pe-body').innerHTML=sorted.map((d,i)=>`
+    <tr onclick="openPeModal(peInvestors.find(x=>x.id==='${d.id}'))">
+      <td style="color:var(--text3);font-family:var(--mono);font-size:11px">${d.rank}</td>
+      <td>
+        <div class="col-name">${d.name}</div>
+        <div class="col-sub">${d.hq}</div>
+      </td>
+      <td class="hide-mobile"><span class="badge ${d.typeBadge}">${d.typeLabel}</span></td>
+      <td style="text-align:right">
+        <span style="font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)">${d.dealCount}</span>
+        <span style="color:var(--text3);font-size:10px;margin-left:3px">deal${d.dealCount!==1?'s':''}</span>
+      </td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:var(--text2)" class="hide-mobile">${d.aum}</td>
+      <td style="font-size:11px;color:var(--text2)">${d.leagueLabel}</td>
+      <td style="text-align:right"><span class="badge ${d.statusBadge}">${d.status}</span></td>
+    </tr>
+  `).join('');
+}
+function sortPe(col){
+  peSort.dir=peSort.col===col?-peSort.dir:-1;
+  peSort.col=col;
+  renderPeTable();
+}
+
+function openPeModal(d){
+  if(!d) return;
+  const dealList=d.deals.map(dl=>`<li style="margin-bottom:7px;color:var(--text2);font-size:12px;line-height:1.5">${dl}</li>`).join('');
+  openModal(`
+    <div class="modal-entity">${d.name}</div>
+    <div class="modal-badges"><span class="badge ${d.typeBadge}">${d.typeLabel}</span><span class="badge ${d.statusBadge}">${d.status}</span></div>
+    <div class="modal-amount" style="font-size:16px;margin-bottom:4px">${d.aum} AUM</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:16px">Founded ${d.founded} &middot; ${d.hq}</div>
+    <div class="modal-grid" style="margin-bottom:14px">
+      <div class="modal-field"><div class="modal-fk">Focus</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal">${d.focus}</div></div>
+      <div class="modal-field"><div class="modal-fk">Deals in DB</div><div class="modal-fv" style="font-family:var(--mono)">${d.dealCount}</div></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="modal-fk" style="margin-bottom:6px">Transactions</div>
+      <ul style="margin:0;padding-left:16px">${dealList}</ul>
+    </div>
+    <div class="modal-field" style="margin-bottom:12px"><div class="modal-fk">Strategy</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal;line-height:1.6">${d.strategy}</div></div>
+    <div class="modal-field" style="margin-bottom:12px"><div class="modal-fk">Key Risk</div><div class="modal-fv" style="font-family:var(--font);font-size:11px;white-space:normal;line-height:1.6;color:var(--red)">${d.risk}</div></div>
+    <div class="modal-notes">${d.keyFact}</div>
+    ${sourceLink(d.source)}
+  `);
+}
+
+
+
+// ── FRANCHISE TABLE ──────────────────────────────────────────────────────────
+function renderFranchiseTable(){
+  let data=franchiseDeals.filter(t=>franchiseFilter==='all'||t.league.toLowerCase()===franchiseFilter);
+  data=[...data].sort((a,b)=>cmp(a[franchiseSort.col],b[franchiseSort.col],franchiseSort.dir));
+  applySort('franchise-thead',franchiseSort);
+  document.getElementById('franchise-body').innerHTML=data.map(t=>{
+    const ps=(t.prem>=0?'+':'')+t.prem.toFixed(1)+'%';
+    const pc=t.prem>5?'col-green':t.prem<-5?'col-red':'col-amber';
+    return`<tr onclick="openFranchiseModal(franchiseDeals.find(x=>x.id===${t.id}))">
+      <td class="col-dim">${t.year}</td>
+      <td><div class="col-name">${t.franchise}</div></td>
+      <td><span class="badge ${t.badge}">${t.league}</span></td>
+      <td><span class="badge ${t.typeBadge}">${t.typeLabel}</span></td>
+      <td class="col-dim">${t.buyer}</td>
+      <td style="text-align:right" class="col-num">${t.currency}${t.val}B${t.id===14?'<sup style="font-size:9px;color:var(--text3)"> est.</sup>':''}</td>
+      <td style="text-align:right" class="col-dim">${t.stake}</td>
+      <td style="text-align:right" class="${pc}">${ps}</td>
+    </tr>`;
+  }).join('');
+}
+function setFranchiseFilter(f,btn){
+  franchiseFilter=f;
+  document.querySelectorAll('#franchise-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderFranchiseTable();
+}
+function sortFranchise(col){
+  franchiseSort.dir=franchiseSort.col===col?-franchiseSort.dir:-1;
+  franchiseSort.col=col;
+  renderFranchiseTable();
+}
+
+// ── MEDIA TABLE ──────────────────────────────────────────────────────────────
+function renderMediaTable(filter){
+  mediaFilter=filter||mediaFilter;
+  let data=mediaDeals.filter(d=>mediaFilter==='all'||d.sport===mediaFilter);
+  const aug=data.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[mediaSort.col],b[mediaSort.col],mediaSort.dir));
+  applySort('media-thead',mediaSort);
+  document.getElementById('media-body').innerHTML=aug.map(d=>`
+    <tr onclick="openMediaModal(mediaDeals.find(x=>x.id==='${d.id}'))">
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.entity}</div></td>
+      <td class="col-dim">${d.league}</td>
+      <td class="col-dim">${d.investor}</td>
+      <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+      <td class="col-dim">${d.duration}</td>
+      <td><span class="badge ${d.statusBadge}">${d.status}</span></td>
+    </tr>`).join('');
+}
+function setMediaFilter(f,btn){
+  document.querySelectorAll('#media-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderMediaTable(f);
+}
+function sortMedia(col){
+  mediaSort.dir=mediaSort.col===col?-mediaSort.dir:-1;
+  mediaSort.col=col;
+  renderMediaTable();
+}
+
+// ── TOKEN TABLE ──────────────────────────────────────────────────────────────
+function renderTokenTable(){
+  const data = tokenDeals.filter(d => tokenFilter==='all' || d.catFilter===tokenFilter);
+  document.getElementById('token-body').innerHTML = data.map(d => `
+    <tr onclick="openTokenModal(tokenDeals.find(x=>x.id==='${d.id}'))">
+      <td class="col-dim" style="white-space:nowrap">${d.date}</td>
+      <td><div class="col-name">${d.entity}</div><div class="col-sub">${d.sport}</div></td>
+      <td><span class="badge ${d.catBadge}">${d.category}</span></td>
+      <td class="col-dim" style="font-size:11.5px">${d.structure}</td>
+      <td style="text-align:right"><div class="col-num" style="font-size:12px">${d.scale}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${d.pct}</div></td>
+    </tr>`).join('');
+}
+function setTokenFilter(f,btn){
+  tokenFilter=f;
+  document.querySelectorAll('#token-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderTokenTable();
+}
+function openTokenModal(d){
+  if(!d) return;
+  const bullets = d.bullets.map(b=>`
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--amber);flex-shrink:0;margin-top:1px">&#8250;</span>
+      <span style="font-size:12px;color:var(--text2);line-height:1.6">${b}</span>
+    </div>`).join('');
+  const sourceHtml = d.source
+    ? `<div class="modal-source"><a href="${d.source}" target="_blank" rel="noopener">View source &#8599;</a></div>`
+    : '';
+  openModal(`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
+      <div class="modal-entity">${d.entity}</div>
+      <span class="badge ${d.statusBadge}" style="flex-shrink:0;margin-top:4px">${d.status}</span>
+    </div>
+    <div class="modal-badges">
+      <span class="badge ${d.catBadge}">${d.category}</span>
+      <span class="badge b-proposed">${d.sport}</span>
+      <span class="badge b-proposed">${d.date}</span>
+    </div>
+    <div style="background:var(--panel);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Summary</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6">${d.summary}</div>
+    </div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Key Facts</div>
+    <div style="margin-bottom:16px">${bullets}</div>
+    <div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:12px 16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--amber);margin-bottom:6px">The Lesson</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.65">${d.lesson}</div>
+    </div>
+    ${sourceHtml}
+  `);
+}
+
+// ── ALT SPORTS ───────────────────────────────────────────────────────────────
+function renderAltTable(){
+  const base = altFilter==='all' ? altDeals : altDeals.filter(d=>d.category===altFilter);
+  const aug=base.map(d=>({...d,valueNum:parseValStr(d.value)}));
+  aug.sort((a,b)=>cmp(a[altSort.col],b[altSort.col],altSort.dir));
+  applySort('alt-thead',altSort);
+  document.getElementById('alt-body').innerHTML = aug.map(d=>`
+    <tr onclick="openAltModal(altDeals.find(x=>x.id==='${d.id}'))">
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.entity}</div></td>
+      <td><span class="badge ${d.typeBadge}">${d.sport}</span></td>
+      <td class="col-dim">${d.investor}</td>
+      <td><span class="badge b-proposed">${d.type}</span></td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+      <td style="text-align:right" class="col-dim">${d.stake}</td>
+    </tr>`).join('');
+}
+function setAltFilter(f,btn){
+  altFilter=f;
+  document.querySelectorAll('#alt-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderAltTable();
+}
+function sortAlt(col){
+  altSort.dir=altSort.col===col?-altSort.dir:-1;
+  altSort.col=col;
+  renderAltTable();
+}
+function openAltModal(d){
+  if(!d) return;
+  openModal(`
+    <div class="modal-entity">${d.entity}</div>
+    <div class="modal-badges"><span class="badge ${d.typeBadge}">${d.sport}</span><span class="badge b-proposed">${d.year}</span></div>
+    <div class="modal-amount" style="font-size:22px">${d.value}</div>
+    <div style="margin-bottom:18px">
+      <span style="font-size:12px;color:var(--text2)">Stake: ${d.stake} &nbsp;|&nbsp; ${d.type}</span>
+    </div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Investor</div><div class="modal-fv" style="font-family:var(--font);font-size:11px">${d.investor}</div></div>
+      <div class="modal-field"><div class="modal-fk">Category</div><div class="modal-fv" style="font-family:var(--font)">${d.sport}</div></div>
+    </div>
+    <div class="modal-notes">${d.notes}</div>
+    ${sourceLink(d.source)}
+  `);
+}
 
 // ── CHART PLUGINS ────────────────────────────────────────────────────────────
 const pePlugin = {

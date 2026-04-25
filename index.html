@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Market — Sports PE Intelligence</title>
+<title>Dashboard — Sports PE Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -227,79 +227,157 @@ tbody tr:last-child td{border-bottom:none}
 }
 </style>
 
-<style>.nav-tab{text-decoration:none;display:inline-flex;align-items:center}</style>
+<style>
+.nav-tab{text-decoration:none;display:inline-flex;align-items:center}
+/* Dashboard grid */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 24px;overflow-y:auto;flex:1}
+.dash-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.dash-card.full{grid-column:1/-1}
+.dash-card-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.dash-card-sub{font-size:11px;color:var(--text3)}
+.dash-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);text-decoration:none;margin-top:auto;padding-top:4px}
+.dash-link:hover{color:#86efac}
+.dash-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
+.dash-kpi{padding:12px 20px;border-right:1px solid var(--border)}
+.dash-kpi:last-child{border-right:none}
+.dash-kpi-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.dash-kpi-val{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text)}
+.dash-kpi-val.green{color:var(--green)}
+.dash-kpi-val.amber{color:var(--amber)}
+.dash-kpi-chg{font-size:10px;color:var(--text3);margin-top:2px}
+</style>
 </head>
 <body>
 <div class="app">
   <header class="header">
     <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
     <nav class="nav" id="main-nav">
-      <a class="nav-tab active" href="index.html">Market</a>
+      <a class="nav-tab active" href="index.html">Dashboard</a>
+      <a class="nav-tab" href="market.html">Market</a>
       <a class="nav-tab" href="football-europe.html">Football: Europe</a>
       <a class="nav-tab" href="football-uk.html">Football: UK</a>
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
     </nav>
-    <div class="header-right"><span class="badge-count" id="deal-count">-- deals</span><span class="clock" id="clock">--:--:--</span></div>
+    <div class="header-right"><span class="badge-count" id="deal-count"></span><span class="clock" id="clock">--:--:--</span></div>
   </header>
   <div class="data-timestamp" style="text-align:center;padding:4px 24px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Data current to April 2026. Valuations sourced from Sportico, Forbes, Deloitte, and public filings. All figures approximate unless otherwise noted.</div>
-  <div class="content"><div class="page active">
-      <div class="sub-tabs" id="market-tabs" style="flex-shrink:0">
-        <button class="sub-tab active" onclick="setMarketTab('index',this)">Valuation Index</button>
-        <button class="sub-tab" onclick="setMarketTab('franchise',this)">Franchise Deals</button>
-      </div>
-      <div id="market-sec-index" style="flex:1;min-height:0;display:flex;flex-direction:column">
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">NFL Avg 2025</div><div class="stat-val green">$7.13B</div><div class="stat-chg up">+27.3% YoY</div></div>
-        <div class="stat-card"><div class="stat-label">NBA Avg 2025</div><div class="stat-val amber">$5.51B</div><div class="stat-chg up">+20.4% YoY</div></div>
-        <div class="stat-card"><div class="stat-label">Peak Deal</div><div class="stat-val">$12.8B</div><div class="stat-chg neu">Cowboys (NFL)</div></div>
-        <div class="stat-card"><div class="stat-label">NFL Combined</div><div class="stat-val">$228B</div><div class="stat-chg neu">32 franchises</div></div>
-        <div class="stat-card"><div class="stat-label">NBA Combined</div><div class="stat-val">$165B</div><div class="stat-chg neu">30 franchises</div></div>
-        <div class="stat-card"><div class="stat-label">PE Stake Cap</div><div class="stat-val">10/30%</div><div class="stat-chg neu">NFL / NBA</div></div>
-      </div>
-      <div class="chart-controls">
-        <div style="display:flex;align-items:center;gap:16px">
-          <span class="chart-label">Franchise Valuation Index 2019–2025 — NFL &amp; NBA avg, deal comps, and PE market access dates</span>
-          <div class="pill-group" id="chart-filter">
-            <button class="pill active" onclick="setChartFilter('all',this)">All</button>
-            <button class="pill" onclick="setChartFilter('nfl',this)">NFL</button>
-            <button class="pill" onclick="setChartFilter('nba',this)">NBA</button>
+  <div class="content" style="overflow-y:auto">
+    <!-- KPI strip -->
+    <div class="dash-kpi-row">
+      <div class="dash-kpi"><div class="dash-kpi-label">NFL Avg 2025</div><div class="dash-kpi-val green">$7.13B</div><div class="dash-kpi-chg">+27.3% YoY</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-label">NBA Avg 2025</div><div class="dash-kpi-val amber">$5.51B</div><div class="dash-kpi-chg">+20.4% YoY</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-label">EFL Deals</div><div class="dash-kpi-val">50</div><div class="dash-kpi-chg">£8.5B+ disclosed</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-label">Euro Club Deals</div><div class="dash-kpi-val">44</div><div class="dash-kpi-chg">EPL · Serie A · La Liga · L1</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-label">PE Investors</div><div class="dash-kpi-val">11</div><div class="dash-kpi-chg">$150B+ combined AUM</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-label">Cont. Euro Deals</div><div class="dash-kpi-val">46</div><div class="dash-kpi-chg">€6.2B+ disclosed</div></div>
+    </div>
+
+    <div class="dash-grid">
+
+      <!-- NFL/NBA Chart -->
+      <div class="dash-card full">
+        <div class="dash-card-title">Franchise Valuation Index — NFL &amp; NBA 2019–2025</div>
+        <div class="chart-controls" style="padding:0;border:none;background:none;margin:0">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="pill-group" id="chart-filter">
+              <button class="pill active" onclick="setChartFilter('all',this)">All</button>
+              <button class="pill" onclick="setChartFilter('nfl',this)">NFL</button>
+              <button class="pill" onclick="setChartFilter('nba',this)">NBA</button>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--green)"></div>NFL Avg</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>NBA Avg</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-color:#86efac"></div>NFL Deal</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--amber);border-color:#fde68a"></div>NBA Deal</div>
           </div>
         </div>
-        <div class="chart-legend">
-          <div class="leg-item"><div class="leg-line" style="background:var(--green)"></div>NFL Avg</div>
-          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>NBA Avg</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-color:#86efac"></div>NFL Deal</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--amber);border-color:#fde68a"></div>NBA Deal</div>
-        </div>
+        <div style="height:280px;position:relative"><canvas id="main-chart"></canvas></div>
+        <a class="dash-link" href="market.html">Full Market Analysis →</a>
       </div>
-      <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
-      </div><!-- end market-sec-index -->
-      <div id="market-sec-franchise" style="display:none;flex:1;min-height:0;display:none;flex-direction:column">
-        <div class="table-controls" style="flex-shrink:0">
-          <div class="pill-group" id="franchise-filter">
-            <button class="pill active" onclick="setFranchiseFilter('all',this)">All (22)</button>
-            <button class="pill" onclick="setFranchiseFilter('nfl',this)">NFL (11)</button>
-            <button class="pill" onclick="setFranchiseFilter('nba',this)">NBA (11)</button>
+
+      <!-- Euro Club Chart -->
+      <div class="dash-card full">
+        <div class="dash-card-title">European Club Valuation Index — EPL · La Liga · Serie A · Ligue 1 (2016–2025)</div>
+        <div class="chart-controls" style="padding:0;border:none;background:none;margin:0">
+          <div class="chart-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--purple)"></div>EPL Avg</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--red)"></div>La Liga</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--cyan)"></div>Serie A</div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>Ligue 1</div>
           </div>
-          <div style="font-size:11px;color:var(--text3)">22 NBA and NFL equity transactions 2020–2025. Valuation multiples vs league average at deal date.</div>
         </div>
-        <div class="tbl-wrap" style="flex:1">
-          <table>
-            <thead id="franchise-thead"><tr>
-              <th data-sort="year" onclick="sortFranchise('year')">Year</th>
-              <th data-sort="franchise" onclick="sortFranchise('franchise')">Franchise</th>
-              <th>League</th><th>Type</th>
-              <th data-sort="buyer" onclick="sortFranchise('buyer')">Buyer</th>
-              <th data-sort="val" onclick="sortFranchise('val')" style="text-align:right">Impl. Val.</th>
-              <th style="text-align:right">Stake</th>
-              <th data-sort="prem" onclick="sortFranchise('prem')" style="text-align:right">vs League Avg</th>
+        <div style="height:260px;position:relative"><canvas id="euro-chart"></canvas></div>
+        <a class="dash-link" href="football-europe.html">Full Europe Analysis →</a>
+      </div>
+
+      <!-- EFL Top Deals -->
+      <div class="dash-card">
+        <div class="dash-card-title">Top EFL Transactions by Value</div>
+        <div class="dash-card-sub">50 deals · 2015–2025 · £8.5B+ disclosed</div>
+        <div class="tbl-wrap" style="padding:0;flex:1;max-height:280px;overflow-y:auto">
+          <table id="efl-dash-table">
+            <thead><tr>
+              <th>Year</th><th>Club</th><th>Acquirer</th>
+              <th style="text-align:right">Value</th><th style="text-align:right">Type</th>
             </tr></thead>
-            <tbody id="franchise-body"></tbody>
+            <tbody id="efl-dash-body"></tbody>
           </table>
         </div>
+        <a class="dash-link" href="football-uk.html">Full UK Analysis →</a>
       </div>
-  </div></div>
+
+      <!-- PE Investors Leaderboard -->
+      <div class="dash-card">
+        <div class="dash-card-title">Active PE Investors — by Deal Count</div>
+        <div class="dash-card-sub">11 firms · $150B+ combined AUM</div>
+        <div class="tbl-wrap" style="padding:0;flex:1;max-height:280px;overflow-y:auto">
+          <table id="pe-dash-table">
+            <thead><tr>
+              <th style="width:24px">#</th><th>Firm</th>
+              <th style="text-align:right">Deals</th><th style="text-align:right">AUM</th>
+            </tr></thead>
+            <tbody id="pe-dash-body"></tbody>
+          </table>
+        </div>
+        <a class="dash-link" href="investors.html">Full Investor Profiles →</a>
+      </div>
+
+      <!-- Continental Euro Deals -->
+      <div class="dash-card">
+        <div class="dash-card-title">Continental Europe Transactions</div>
+        <div class="dash-card-sub">46 deals · Ligue 1 · La Liga · Serie A</div>
+        <div class="tbl-wrap" style="padding:0;flex:1;max-height:280px;overflow-y:auto">
+          <table id="ceur-dash-table">
+            <thead><tr>
+              <th>Year</th><th>Club</th><th>Acquirer</th>
+              <th style="text-align:right">Value</th>
+            </tr></thead>
+            <tbody id="ceur-dash-body"></tbody>
+          </table>
+        </div>
+        <a class="dash-link" href="football-europe.html">Full Europe Analysis →</a>
+      </div>
+
+      <!-- Capital Markets -->
+      <div class="dash-card">
+        <div class="dash-card-title">Capital Markets Activity</div>
+        <div class="dash-card-sub">Alt Sports · Media Rights · Tokenisation</div>
+        <div class="tbl-wrap" style="padding:0;flex:1;max-height:280px;overflow-y:auto">
+          <table id="alt-dash-table">
+            <thead><tr>
+              <th>Year</th><th>Entity</th><th>Sport</th>
+              <th style="text-align:right">Value</th>
+            </tr></thead>
+            <tbody id="alt-dash-body"></tbody>
+          </table>
+        </div>
+        <a class="dash-link" href="capital-markets.html">Full Capital Markets →</a>
+      </div>
+
+    </div>
+  </div>
 </div>
 <div class="modal-backdrop" id="modal" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-inner"></div></div></div>
 <script>
@@ -2049,9 +2127,56 @@ function openMediaModal(d){
 
 function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());}
 setInterval(tick,1000);tick();
+
 window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById("deal-count").textContent="("+franchiseDeals.length+" franchise deals)";
-  initMainChart();
-  renderFranchiseTable();
+  // EFL top 10 by disclosed value
+  const eflTop=[...eflDeals]
+    .filter(d=>d.value&&d.value!=='N/D')
+    .sort((a,b)=>parseValStr(b.value)-parseValStr(a.value))
+    .slice(0,12);
+  document.getElementById('efl-dash-body').innerHTML=eflTop.map(d=>`
+    <tr onclick="openEflModal(eflDeals.find(x=>x.id===d.id))" style="cursor:pointer">
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.club}</div></td>
+      <td class="col-dim" style="font-size:11px">${d.acquirer}</td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+      <td style="text-align:right"><span class="badge ${d.typeBadge}">${d.type}</span></td>
+    </tr>`).join('');
+
+  // PE ranked
+  const peSorted=[...peInvestors].sort((a,b)=>b.dealCount-a.dealCount);
+  document.getElementById('pe-dash-body').innerHTML=peSorted.map(d=>`
+    <tr onclick="openPeModal(d)" style="cursor:pointer">
+      <td style="color:var(--text3);font-family:var(--mono);font-size:11px">${d.rank}</td>
+      <td><div class="col-name">${d.name}</div></td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:600">${d.dealCount}</td>
+      <td style="text-align:right;font-size:11px;color:var(--text2)">${d.aum}</td>
+    </tr>`).join('');
+
+  // Continental Euro top deals
+  const ceurTop=[...ceurDeals].sort((a,b)=>parseValStr(b.value)-parseValStr(a.value)).slice(0,12);
+  document.getElementById('ceur-dash-body').innerHTML=ceurTop.map(d=>`
+    <tr>
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.club}</div></td>
+      <td class="col-dim" style="font-size:11px">${d.acquirer}</td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+    </tr>`).join('');
+
+  // Alt sports top deals
+  const altTop=[...altDeals].sort((a,b)=>parseValStr(b.value)-parseValStr(a.value)).slice(0,12);
+  document.getElementById('alt-dash-body').innerHTML=altTop.map(d=>`
+    <tr>
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.entity}</div></td>
+      <td><span class="badge ${d.typeBadge}" style="font-size:10px">${d.sport}</span></td>
+      <td style="text-align:right" class="col-num">${d.value}</td>
+    </tr>`).join('');
+
+  // Charts — delay to ensure layout
+  setTimeout(()=>{
+    initMainChart();
+    initEuroChart();
+  },100);
 });
 </script></body></html>

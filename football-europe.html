@@ -227,20 +227,39 @@ tbody tr:last-child td{border-bottom:none}
 }
 </style>
 
-<style>.nav-tab{text-decoration:none;display:inline-flex;align-items:center}</style>
+<style>
+.nav-tab{text-decoration:none;display:inline-flex;align-items:center}
+/* Dashboard grid */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 24px;overflow-y:auto;flex:1}
+.dash-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.dash-card.full{grid-column:1/-1}
+.dash-card-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.dash-card-sub{font-size:11px;color:var(--text3)}
+.dash-link{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);text-decoration:none;margin-top:auto;padding-top:4px}
+.dash-link:hover{color:#86efac}
+.dash-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
+.dash-kpi{padding:12px 20px;border-right:1px solid var(--border)}
+.dash-kpi:last-child{border-right:none}
+.dash-kpi-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.dash-kpi-val{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text)}
+.dash-kpi-val.green{color:var(--green)}
+.dash-kpi-val.amber{color:var(--amber)}
+.dash-kpi-chg{font-size:10px;color:var(--text3);margin-top:2px}
+</style>
 </head>
 <body>
 <div class="app">
   <header class="header">
     <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
     <nav class="nav" id="main-nav">
-      <a class="nav-tab" href="index.html">Market</a>
+      <a class="nav-tab" href="index.html">Dashboard</a>
+      <a class="nav-tab" href="market.html">Market</a>
       <a class="nav-tab active" href="football-europe.html">Football: Europe</a>
       <a class="nav-tab" href="football-uk.html">Football: UK</a>
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
     </nav>
-    <div class="header-right"><span class="badge-count" id="deal-count">-- deals</span><span class="clock" id="clock">--:--:--</span></div>
+    <div class="header-right"><span class="badge-count" id="deal-count"></span><span class="clock" id="clock">--:--:--</span></div>
   </header>
   <div class="data-timestamp" style="text-align:center;padding:4px 24px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Data current to April 2026. Valuations sourced from Sportico, Forbes, Deloitte, and public filings. All figures approximate unless otherwise noted.</div>
   <div class="content"><div class="page active">
@@ -2080,8 +2099,10 @@ function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getEl
 setInterval(tick,1000);tick();
 window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById("deal-count").textContent="("+euroDeals.length+" club deals)";
-  renderEuroClubTable();
-  renderCeurTable2();
-  setTimeout(()=>{initEuroChart();},50);
+  setTimeout(()=>{
+    renderEuroClubTable();
+    renderCeurTable2();
+    initEuroChart();
+  },80);
 });
 </script></body></html>

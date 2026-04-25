@@ -260,18 +260,25 @@ tbody tr:last-child td{border-bottom:none}
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
     </nav>
-    <div class="header-right"><span class="badge-count" id="deal-count"></span><span class="clock" id="clock">--:--:--</span></div>
+    <div class="header-right"><span class="badge-count" id="deal-count"></span></div>
   </header>
-  <div class="data-timestamp" style="text-align:center;padding:2px 24px;font-size:10px;color:var(--text3);opacity:0.5;border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Data current to April 2026. Valuations sourced from Sportico, Forbes, Deloitte, and public filings. All figures approximate unless otherwise noted.</div>
+  <div class="data-timestamp" style="text-align:right;padding:2px 16px;font-size:10px;color:var(--text3);opacity:0.5;border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Sources: Sportico, Forbes, Deloitte &nbsp;|&nbsp; April 2026</div>
   <div class="content"><div class="page active">
       <div class="sub-tabs" id="euro-tabs" style="flex-shrink:0">
         <button class="sub-tab active" onclick="setEuroTab('index',this)">Club Equity</button>
         <button class="sub-tab" onclick="setEuroTab('transactions',this)">Transactions</button>
+        <button class="sub-tab" onclick="setEuroTab('investors',this)">Investors</button>
       </div>
       <div id="euro-sec-index" style="flex:1;min-height:0;display:flex;flex-direction:column">
+      <div class="stats-grid" id="euro-stats-row" style="grid-template-columns:repeat(4,1fr);flex-shrink:0">
+        <div class="stat-card"><div class="stat-label">Total Tracked</div><div class="stat-val" id="euro-stat-total">49</div><div class="stat-chg neu">2008 – 2025</div></div>
+        <div class="stat-card"><div class="stat-label">EPL Avg 2025</div><div class="stat-val amber">$3.0B</div><div class="stat-chg up">vs $0.8B in 2016</div></div>
+        <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val">Chelsea $5.3B</div><div class="stat-chg neu">Clearlake / Boehly 2022</div></div>
+        <div class="stat-card"><div class="stat-label">US Capital</div><div class="stat-val green" id="euro-stat-us">27</div><div class="stat-chg up" id="euro-stat-us-sub">of 49 transactions</div></div>
+      </div>
       <!-- Price index chart — Chart.js canvas -->
       <div class="chart-controls" style="flex-shrink:0">
-        <span class="chart-label">Avg Club Valuation by League (2016–2025, $B)</span>
+        <span class="chart-label">EPL Avg Now 3x Continental Peers &nbsp;<span style="font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0">Club valuations by league, 2016–2025 ($B)</span></span>
         <div class="chart-legend">
           <div class="leg-item"><div class="leg-line" style="background:var(--purple)"></div>EPL Avg</div>
           <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--red)"></div>La Liga Avg</div>
@@ -284,19 +291,28 @@ tbody tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="chart-wrap" style="height:340px;flex-shrink:0"><canvas id="euro-chart"></canvas></div>
-      <div class="euro-footnote" style="padding:4px 24px 8px;flex-shrink:0">Estimates based on Sportico, Deloitte Football Money League, and Forbes annual valuations. 2020 reflects COVID-adjusted figures. Deal dots are clickable for sourced deal detail.</div>
+      <div class="euro-footnote" style="padding:4px 24px 6px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between"><span>Sportico / Deloitte / Forbes. 2020 COVID-adjusted.</span><span style="color:var(--amber);opacity:.7">&#9679; Click deal dots or table rows for sourced deal detail</span></div>
       <!-- Club equity table — always visible below chart -->
       <div style="border-top:1px solid var(--border);flex:1;min-height:0;display:flex;flex-direction:column">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px">
-          <span class="chart-label">Club Equity Transactions</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 24px 4px;flex-shrink:0">
+          <span class="chart-label">Club Equity Transactions <span id="euro-count-badge" style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0;margin-left:4px">(49)</span></span>
+          <input id="euro-search" type="text" placeholder="Search club, investor..." oninput="renderEuroClubTable()" style="background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:5px 10px;width:200px;outline:none">
+        </div>
+        <div style="padding:0 24px 8px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
           <div class="pill-group" id="euro-league-filter">
-            <button class="pill active" onclick="setEuroLeague('all',this)">All (49)</button>
+            <button class="pill active" onclick="setEuroLeague('all',this)">All</button>
             <button class="pill" onclick="setEuroLeague('epl',this)">Premier League</button>
             <button class="pill" onclick="setEuroLeague('seriea',this)">Serie A</button>
             <button class="pill" onclick="setEuroLeague('laliga',this)">La Liga</button>
             <button class="pill" onclick="setEuroLeague('ligue1',this)">Ligue 1</button>
             <button class="pill" onclick="setEuroLeague('multi',this)">Multi-club</button>
             <button class="pill" onclick="setEuroLeague('eredivisie',this)">Eredivisie</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span style="font-size:11px;color:var(--text3)">From</span>
+            <select id="euro-year-from" onchange="renderEuroClubTable()" style="background:var(--panel);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:4px 6px;font-family:var(--font)"><option value="">All</option><option>2008</option><option>2010</option><option>2015</option><option>2019</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+            <span style="font-size:11px;color:var(--text3)">To</span>
+            <select id="euro-year-to" onchange="renderEuroClubTable()" style="background:var(--panel);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:4px 6px;font-family:var(--font)"><option value="">All</option><option>2015</option><option>2019</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option></select>
           </div>
         </div>
         <div class="tbl-wrap" style="padding-top:0;flex:1;min-height:0;overflow-y:auto">
@@ -322,18 +338,21 @@ tbody tr:last-child td{border-bottom:none}
 
       <!-- Transactions sub-tab: Continental Euro 46 deals -->
       <div id="euro-sec-transactions" style="display:none;flex:1;min-height:0;flex-direction:column">
-        <div style="padding:10px 24px 0;flex-shrink:0;display:flex;align-items:baseline;justify-content:space-between">
-          <span class="chart-label">Continental Europe Transactions</span>
-          <a href="football-uk.html" style="font-size:11px;color:var(--text3);text-decoration:none">Premier League deals: Football: UK &rarr;</a>
-        </div>
         <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);flex-shrink:0">
           <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-val" id="ceur2-total">50</div><div class="stat-chg neu" id="ceur2-total-sub">2014 – 2025</div></div>
           <div class="stat-card"><div class="stat-label">Disclosed Value</div><div class="stat-val amber" id="ceur2-value">€6.2B+</div><div class="stat-chg neu">Excl. undisclosed</div></div>
           <div class="stat-card"><div class="stat-label">US-led Deals</div><div class="stat-val green" id="ceur2-us">18</div><div class="stat-chg up" id="ceur2-us-sub">Largest single cohort</div></div>
           <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val" id="ceur2-largest">AC Milan €1.2B</div><div class="stat-chg neu" id="ceur2-largest-sub">RedBird Capital 2022</div></div>
         </div>
-        <div style="padding:8px 24px 4px;flex-shrink:0;display:flex;align-items:center;gap:8px">
-          <input id="ceur2-search" type="text" placeholder="Search club, investor..." oninput="renderCeurTable2()" style="background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:5px 10px;width:220px;outline:none;flex-shrink:0">
+        <div style="padding:4px 24px 0;flex-shrink:0;display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--text3)">Continental Europe only. <a href="football-uk.html" style="color:var(--text3)">Premier League deals on Football: UK &rarr;</a></span></div>
+        <div style="padding:8px 24px 4px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <input id="ceur2-search" type="text" placeholder="Search club, investor..." oninput="renderCeurTable2()" style="background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:5px 10px;width:200px;outline:none;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span style="font-size:11px;color:var(--text3)">From</span>
+            <select id="ceur2-year-from" onchange="renderCeurTable2()" style="background:var(--panel);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:4px 6px;font-family:var(--font)"><option value="">All</option><option>2014</option><option>2016</option><option>2019</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+            <span style="font-size:11px;color:var(--text3)">To</span>
+            <select id="ceur2-year-to" onchange="renderCeurTable2()" style="background:var(--panel);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:4px 6px;font-family:var(--font)"><option value="">All</option><option>2016</option><option>2019</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option></select>
+          </div>
         </div>
         <div style="padding:4px 24px 8px;flex-shrink:0;display:flex;flex-wrap:wrap;gap:4px" id="ceur-filter-row-2">
           <button class="pill active" onclick="setCeurFilter2('all',this)">All Leagues</button>
@@ -355,6 +374,26 @@ tbody tr:last-child td{border-bottom:none}
               <th style="text-align:right">Type</th>
             </tr></thead>
             <tbody id="ceur-body-2"></tbody>
+          </table>
+        </div>
+      </div>
+  <!-- Investors aggregation tab -->
+      <div id="euro-sec-investors" style="display:none;flex:1;min-height:0;flex-direction:column">
+        <div style="padding:10px 24px 6px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+          <span class="chart-label">Investor Activity <span id="inv-count-badge" style="font-size:11px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0"></span></span>
+          <input id="inv-search" type="text" placeholder="Search investor..." oninput="renderInvestorTable()" style="background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:5px 10px;width:180px;outline:none">
+        </div>
+        <div class="tbl-wrap" style="overflow-y:auto;flex:1;min-height:0">
+          <table id="inv-table">
+            <thead><tr>
+              <th onclick="sortInv('investor')" data-sort="investor">Investor</th>
+              <th onclick="sortInv('nationality')" data-sort="nationality" class="hide-mobile">Nationality</th>
+              <th onclick="sortInv('deals')" data-sort="deals" style="text-align:right;width:60px">Deals</th>
+              <th onclick="sortInv('leagues')" data-sort="leagues" class="hide-mobile">Leagues</th>
+              <th onclick="sortInv('lastYear')" data-sort="lastYear" style="text-align:right;width:70px">Last Deal</th>
+              <th onclick="sortInv('totalVal')" data-sort="totalVal" style="text-align:right">Total Value</th>
+            </tr></thead>
+            <tbody id="inv-body"></tbody>
           </table>
         </div>
       </div>
@@ -903,9 +942,13 @@ function setEuroTab(tab, el){
   document.querySelectorAll('#euro-tabs .sub-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   const isTx = tab==='transactions';
-  document.getElementById('euro-sec-index').style.display = isTx ? 'none' : 'flex';
+  const isInv = tab==='investors';
+  document.getElementById('euro-sec-index').style.display = (!isTx&&!isInv) ? 'flex' : 'none';
   document.getElementById('euro-sec-transactions').style.display = isTx ? 'flex' : 'none';
-  if(!isTx) setTimeout(()=>{ if(!euroChart) initEuroChart(); else euroChart.resize(); }, 50);
+  if(isTx) document.getElementById('euro-sec-transactions').style.flexDirection = 'column';
+  const invEl=document.getElementById('euro-sec-investors');
+  if(invEl){ invEl.style.display=isInv?'flex':'none'; if(isInv){ invEl.style.flexDirection='column'; renderInvestorTable(); } }
+  if(!isTx&&!isInv) setTimeout(()=>{ if(!euroChart) initEuroChart(); else euroChart.resize(); }, 50);
 }
 
 // ── CAPITAL MARKETS SUB-TABS ──────────────────────────────────────────────────
@@ -959,8 +1002,11 @@ function updateCeurStats2(filteredDeals){
 function renderCeurTable2(){
   const q=(document.getElementById('ceur2-search')||{}).value||'';
   const ql=q.toLowerCase();
+  const yFrom=parseInt((document.getElementById('ceur2-year-from')||{}).value)||0;
+  const yTo=parseInt((document.getElementById('ceur2-year-to')||{}).value)||9999;
   let base=ceurFilter2==='all'?ceurDeals:ceurDeals.filter(d=>d.league===ceurFilter2);
   if(ql) base=base.filter(d=>(d.club+d.acquirer+d.nationality+d.leagueLabel).toLowerCase().includes(ql));
+  base=base.filter(d=>d.year>=yFrom&&d.year<=yTo);
   updateCeurStats2(base);
   const aug=base.map(d=>({...d,valueNum:parseValStr(d.value)}));
   aug.sort((a,b)=>cmp(a[ceurSort2.col],b[ceurSort2.col],ceurSort2.dir));
@@ -1879,8 +1925,23 @@ function setEuroLeague(f,btn){
   if(euroChart){euroChart.data.datasets=buildEuroDatasets();euroChart.update();}
 }
 function renderEuroClubTable(){
+  const q=(document.getElementById('euro-search')||{}).value||'';
+  const ql=q.toLowerCase();
+  const yFrom=parseInt((document.getElementById('euro-year-from')||{}).value)||0;
+  const yTo=parseInt((document.getElementById('euro-year-to')||{}).value)||9999;
   const clubDeals=euroDeals.filter(d=>d.id.startsWith('e'));
-  const filtered=euroLeague==='all'?clubDeals:clubDeals.filter(d=>d.leagueBadge===leagueMap[euroLeague]);
+  let filtered=euroLeague==='all'?clubDeals:clubDeals.filter(d=>d.leagueBadge===leagueMap[euroLeague]);
+  if(ql) filtered=filtered.filter(d=>(d.club+d.investor+d.league+d.country).toLowerCase().includes(ql));
+  filtered=filtered.filter(d=>d.year>=yFrom&&d.year<=yTo);
+  // Update count badge
+  const badge=document.getElementById('euro-count-badge');
+  if(badge) badge.textContent='('+filtered.length+')';
+  // Update stats
+  const totalEl=document.getElementById('euro-stat-total');
+  if(totalEl) totalEl.textContent=filtered.length;
+  const usEl=document.getElementById('euro-stat-us');
+  const usSubEl=document.getElementById('euro-stat-us-sub');
+  if(usEl){const usCt=filtered.filter(d=>d.investor&&(d.investor.toLowerCase().includes('redbird')||d.investor.toLowerCase().includes('silver lake')||d.investor.toLowerCase().includes('clearlake')||d.investor.toLowerCase().includes('arctos')||d.investor.toLowerCase().includes('6th street')||d.investor.toLowerCase().includes('sixth street')||d.investor.toLowerCase().includes('oaktree')||d.investor.toLowerCase().includes('elliott')||d.investor.toLowerCase().includes('dynasty')||d.investor.toLowerCase().includes('49ers')||d.investor.toLowerCase().includes('ineos')||d.investor.toLowerCase().includes('ratcliffe')||d.investor.toLowerCase().includes('friedkin')||d.investor.toLowerCase().includes('textor')||d.investor.toLowerCase().includes('commisso')||d.investor.toLowerCase().includes('pagliuca')||d.investor.toLowerCase().includes('bain')||d.investor.toLowerCase().includes('alk')||d.investor.toLowerCase().includes('sport republic')||d.investor.toLowerCase().includes('fenway')||d.investor.toLowerCase().includes('fsg')||d.investor.toLowerCase().includes('walton')||d.investor.toLowerCase().includes('harris')));usCt&&(usEl.textContent=usCt.length,usSubEl&&(usSubEl.textContent='of '+filtered.length+' deals'));}
   const aug=filtered.map(d=>({...d,amountNum:parseValStr(d.amount)}));
   aug.sort((a,b)=>cmp(a[euroSort.col],b[euroSort.col],euroSort.dir));
   applySort('euro-thead',euroSort);
@@ -2225,8 +2286,65 @@ function openMediaModal(d){
 
 
 
-function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());}
-setInterval(tick,1000);tick();
+
+
+// ── INVESTOR AGGREGATION ────────────────────────────────────────────────────
+let invSort={col:'deals',dir:-1};
+function buildInvestorData(){
+  const q=(document.getElementById('inv-search')||{}).value||'';
+  const ql=q.toLowerCase();
+  const map={};
+  [...euroDeals.filter(d=>d.id.startsWith('e')),...ceurDeals].forEach(d=>{
+    const inv=(d.investor||d.acquirer||'Unknown').split('/')[0].trim();
+    if(!map[inv]) map[inv]={investor:inv,nationality:d.nationality||'—',deals:0,leagues:new Set(),lastYear:0,totalVal:0,clubs:[]};
+    map[inv].deals++;
+    map[inv].leagues.add(d.leagueLabel||d.league||'—');
+    if((d.year||0)>map[inv].lastYear) map[inv].lastYear=d.year||0;
+    const v=parseValStr(d.amount||d.value||'');
+    if(v>0) map[inv].totalVal+=v;
+    map[inv].clubs.push(d.club||d.franchise||'');
+  });
+  let rows=Object.values(map).map(r=>({...r,leagues:[...r.leagues].join(', ')}));
+  if(ql) rows=rows.filter(r=>(r.investor+r.nationality+r.leagues).toLowerCase().includes(ql));
+  rows.sort((a,b)=>cmp(a[invSort.col],b[invSort.col],invSort.dir));
+  return rows;
+}
+function renderInvestorTable(){
+  const rows=buildInvestorData();
+  const badge=document.getElementById('inv-count-badge');
+  if(badge) badge.textContent='('+rows.length+' investors)';
+  const tb=document.getElementById('inv-body');
+  if(!tb) return;
+  tb.innerHTML=rows.map(r=>`
+    <tr style="cursor:pointer" onclick="openInvModal(${JSON.stringify(r).replace(/'/g,'&#39;')})">
+      <td><div class="col-name">${r.investor}</div></td>
+      <td class="hide-mobile col-dim" style="font-size:11px">${r.nationality||'—'}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:600;color:var(--text)">${r.deals}</td>
+      <td class="hide-mobile" style="font-size:11px;color:var(--text2);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.leagues}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--text2)">${r.lastYear||'—'}</td>
+      <td style="text-align:right;font-family:var(--mono);font-weight:600;color:${r.totalVal>0?'var(--amber)':'var(--text3)'}">${r.totalVal>0?'€'+r.totalVal.toFixed(1)+'B':'N/D'}</td>
+    </tr>`).join('');
+}
+function sortInv(col){
+  invSort.dir=invSort.col===col?-invSort.dir:-1;
+  invSort.col=col;
+  renderInvestorTable();
+}
+function openInvModal(r){
+  if(typeof r==='string') r=JSON.parse(r);
+  openModal(`
+    <div class="modal-entity">${r.investor}</div>
+    <div class="modal-badges"><span class="badge b-pe">${r.nationality||'—'}</span></div>
+    <div class="modal-grid">
+      <div class="modal-field"><div class="modal-fk">Total Deals</div><div class="modal-fv">${r.deals}</div></div>
+      <div class="modal-field"><div class="modal-fk">Last Deal</div><div class="modal-fv">${r.lastYear||'—'}</div></div>
+      <div class="modal-field"><div class="modal-fk">Total Value</div><div class="modal-fv">${r.totalVal>0?'€'+r.totalVal.toFixed(1)+'B':'Undisclosed'}</div></div>
+      <div class="modal-field"><div class="modal-fk">Leagues</div><div class="modal-fv" style="font-family:var(--font);font-size:11px">${r.leagues}</div></div>
+    </div>
+    <div class="modal-notes"><strong>Clubs tracked:</strong> ${(r.clubs||[]).filter((c,i,a)=>a.indexOf(c)===i).join(', ')}</div>
+  `);
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>{
     document.getElementById("deal-count").textContent="("+euroDeals.length+" clubs)";

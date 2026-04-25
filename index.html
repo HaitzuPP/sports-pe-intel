@@ -960,6 +960,218 @@ const tokenDeals = [
 ];
 
 
+// ── STATE ────────────────────────────────────────────────────────────────────
+let chartFilter='all', franchiseFilter='all', mediaFilter='all', tokenFilter='all', altFilter='all';
+let mainChart=null, euroChart=null;
+let franchiseSort={col:'year',dir:-1};
+let euroSort={col:'year',dir:-1};
+let mediaSort={col:'year',dir:-1};
+let altSort={col:'year',dir:-1};
+let peSort={col:'dealCount',dir:-1};
+let eflSort={col:'year',dir:-1};
+
+// ── SORT HELPERS ─────────────────────────────────────────────────────────────
+function parseValStr(s){
+  if(!s||s==='N/D'||s==='—'||s==='N/A') return -1;
+  const clean=s.replace(/[£€$,~]/g,'');
+  const m=clean.match(/([\d.]+)\s*([BMKbmk]?)/);
+  if(!m) return -1;
+  let n=parseFloat(m[1]);
+  const suf=(m[2]||'').toUpperCase();
+  if(suf==='B') n*=1000;
+  if(suf==='K') n/=1000;
+  return n;
+}
+function applySort(theadId,state){
+  document.querySelectorAll('#'+theadId+' th[data-sort]').forEach(th=>{
+    th.classList.remove('th-asc','th-desc');
+    if(th.dataset.sort===state.col) th.classList.add(state.dir===1?'th-asc':'th-desc');
+  });
+}
+function cmp(a,b,dir){
+  if(typeof a==='string'&&typeof b==='string') return dir*a.localeCompare(b);
+  return dir*((a??-Infinity)-(b??-Infinity));
+}
+
+// ── CHART PLUGINS ────────────────────────────────────────────────────────────
+const pePlugin = {
+  id:'peLine',
+  afterDraw(ch){
+    const {ctx,chartArea,scales}=ch; if(!scales.x) return;
+    const drawLine=(xVal,color,label1,label2)=>{
+      const xPx=scales.x.getPixelForValue(xVal);
+      ctx.save();
+      ctx.setLineDash([3,5]); ctx.strokeStyle=color; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(xPx,chartArea.top); ctx.lineTo(xPx,chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle=color;
+      ctx.font="bold 9px Inter,system-ui,sans-serif";
+      ctx.fillText(label1,xPx+5,chartArea.top+13);
+      ctx.fillText(label2,xPx+5,chartArea.top+24);
+      ctx.restore();
+    };
+    drawLine(2020,'rgba(96,165,250,.55)','NBA PE','OPENS');
+    drawLine(2024,'rgba(248,113,113,.45)','NFL PE','OPENS');
+    const xProj=scales.x.getPixelForValue(2026);
+    ctx.save();
+    ctx.setLineDash([2,4]); ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(xProj,chartArea.top); ctx.lineTo(xProj,chartArea.bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,.25)';
+    ctx.font="bold 9px Inter,system-ui,sans-serif";
+    ctx.fillText('2026+',xProj+5,chartArea.top+13);
+    ctx.fillText('PROJ',xProj+5,chartArea.top+24);
+    ctx.restore();
+  }
+};
+
+const euroPlugin = {
+  id:'euroLine',
+  afterDraw(ch){
+    const {ctx,chartArea,scales}=ch; if(!scales.x) return;
+    const drawLine=(xVal,color,label)=>{
+      const xPx=scales.x.getPixelForValue(xVal);
+      ctx.save();
+      ctx.setLineDash([3,5]); ctx.strokeStyle=color; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(xPx,chartArea.top); ctx.lineTo(xPx,chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle=color;
+      ctx.font="bold 8.5px Inter,system-ui,sans-serif";
+      ctx.fillText(label,xPx+4,chartArea.top+12);
+      ctx.restore();
+    };
+    drawLine(2022,'rgba(248,113,113,.35)','Chelsea $5.3B');
+    drawLine(2020,'rgba(255,255,255,.12)','COVID');
+  }
+};
+
+// ── MAIN CHART ───────────────────────────────────────────────────────────────
+function buildMainDatasets(){
+  const sn=chartFilter!=='nba', sb=chartFilter!=='nfl';
+  const nflPts=franchiseDeals.filter(t=>t.league==='NFL').map(t=>({x:t.xp,y:t.val,id:t.id}));
+  const nbaPts=franchiseDeals.filter(t=>t.league==='NBA').map(t=>({x:t.xp,y:t.val,id:t.id}));
+  return[
+    {label:'NFL Avg',type:'line',data:sn?nflAvg:[],borderColor:'#2a9f63',backgroundColor:'rgba(42,159,99,.07)',fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#2a9f63',order:3},
+    {label:'NBA Avg',type:'line',data:sb?nbaAvg:[],borderColor:'#b8832a',backgroundColor:'rgba(184,131,42,.07)',borderDash:[6,3],fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#b8832a',order:3},
+    {label:'NFL Proj',type:'line',data:sn?nflProj:[],borderColor:'rgba(42,159,99,.5)',backgroundColor:'rgba(42,159,99,.03)',borderDash:[5,5],fill:true,tension:.3,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#2a9f63',order:4},
+    {label:'NBA Proj',type:'line',data:sb?nbaProj:[],borderColor:'rgba(184,131,42,.5)',backgroundColor:'rgba(184,131,42,.03)',borderDash:[5,5],fill:true,tension:.3,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#b8832a',order:4},
+    {label:'NFL Deal',type:'scatter',data:sn?nflPts:[],backgroundColor:'#2a9f63',borderColor:'#48c882',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
+    {label:'NBA Deal',type:'scatter',data:sb?nbaPts:[],backgroundColor:'#b8832a',borderColor:'#d4a84e',pointRadius:7,pointHoverRadius:11,borderWidth:2,order:1},
+  ];
+}
+function initMainChart(){
+  const ctx=document.getElementById('main-chart').getContext('2d');
+  mainChart=new Chart(ctx,{
+    type:'scatter',data:{datasets:buildMainDatasets()},plugins:[pePlugin],
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      scales:{
+        x:{type:'linear',min:2019.3,max:2028.3,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#344d62',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#172840'},border:{color:'#172840'}},
+        y:{min:0,max:14,ticks:{callback:v=>'$'+v+'B',color:'#344d62',font:{family:'JetBrains Mono,monospace',size:10}},grid:{color:'#172840'},border:{color:'#172840'}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0f2035',borderColor:'#1f3655',borderWidth:1,titleColor:'#ccd6e0',bodyColor:'#637a90',padding:12,
+          titleFont:{family:'Inter,system-ui,sans-serif',size:12,weight:'600'},
+          bodyFont:{family:'JetBrains Mono,monospace',size:11},
+          callbacks:{
+            title(items){const i=items[0];if(i.dataset.label==='NFL Deal'||i.dataset.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===i.raw.id);return t?t.franchise:i.dataset.label;}return i.dataset.label;},
+            label(i){if(i.dataset.label==='NFL Deal'||i.dataset.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===i.raw.id);if(t)return['$'+t.val+'B  |  '+t.year,'Buyer: '+t.buyer,'Stake: '+t.stake,(t.prem>=0?'+':'')+t.prem.toFixed(1)+'% vs lg avg'];}return '$'+i.raw.y.toFixed(2)+'B';}
+          }
+        }
+      },
+      onClick(evt,els){if(!els.length)return;const e=els[0];const ds=mainChart.data.datasets[e.datasetIndex];if(ds.label==='NFL Deal'||ds.label==='NBA Deal'){const t=franchiseDeals.find(x=>x.id===ds.data[e.index].id);if(t)openFranchiseModal(t);}},
+      onHover(evt,els){evt.native.target.style.cursor=els.length?'pointer':'default';}
+    }
+  });
+}
+function setChartFilter(f,btn){
+  chartFilter=f;
+  document.querySelectorAll('#chart-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  mainChart.data.datasets=buildMainDatasets();
+  mainChart.update();
+}
+
+// ── EURO CHART ───────────────────────────────────────────────────────────────
+function buildEuroDatasets(){
+  const all=euroLeague==='all', f=euroLeague;
+  const showEpl  =all||f==='epl'||f==='multi';
+  const showLaliga=all||f==='laliga';
+  const showSeriea=all||f==='seriea';
+  const showLigue1=all||f==='ligue1';
+  const eplPts   =euroDeals.filter(d=>d.xp&&d.impliedVal&&(d.leagueBadge==='b-epl'||d.leagueBadge==='b-multi')).map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  const laligaPts=euroDeals.filter(d=>d.xp&&d.impliedVal&&d.leagueBadge==='b-laliga').map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  const ligue1Pts=euroDeals.filter(d=>d.xp&&d.impliedVal&&d.leagueBadge==='b-ligue1').map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  const seriePts =euroDeals.filter(d=>d.xp&&d.impliedVal&&d.leagueBadge==='b-seriea').map(d=>({x:d.xp,y:d.impliedVal,id:d.id}));
+  return[
+    {label:'EPL Avg',type:'line',data:showEpl?eplAvg:[],borderColor:'#6870b8',backgroundColor:'rgba(104,112,184,.08)',fill:true,tension:.3,borderWidth:2.2,pointRadius:0,pointHoverRadius:4,order:4},
+    {label:'La Liga Avg',type:'line',data:showLaliga?laligaAvg:[],borderColor:'#bf4f4f',backgroundColor:'rgba(191,79,79,.06)',borderDash:[6,3],fill:true,tension:.3,borderWidth:2,pointRadius:0,pointHoverRadius:4,order:4},
+    {label:'Serie A Avg',type:'line',data:showSeriea?serieaAvg:[],borderColor:'#2a8fb5',backgroundColor:'rgba(42,143,181,.06)',borderDash:[4,4],fill:true,tension:.3,borderWidth:2,pointRadius:0,pointHoverRadius:4,order:4},
+    {label:'Ligue 1 Avg',type:'line',data:showLigue1?ligue1Avg:[],borderColor:'#b8832a',backgroundColor:'rgba(184,131,42,.06)',borderDash:[2,5],fill:true,tension:.3,borderWidth:2,pointRadius:0,pointHoverRadius:4,order:4},
+    {label:'EPL Deal',type:'scatter',data:showEpl?eplPts:[],backgroundColor:'#6870b8',borderColor:'#9095d4',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+    {label:'La Liga Deal',type:'scatter',data:showLaliga?laligaPts:[],backgroundColor:'#bf4f4f',borderColor:'#d97878',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+    {label:'Ligue 1 Deal',type:'scatter',data:showLigue1?ligue1Pts:[],backgroundColor:'#bf4f4f',borderColor:'#d97878',pointRadius:5,pointHoverRadius:9,borderWidth:2,order:1},
+    {label:'Serie A Deal',type:'scatter',data:showSeriea?seriePts:[],backgroundColor:'#2a8fb5',borderColor:'#4db3d4',pointRadius:6,pointHoverRadius:10,borderWidth:2,order:1},
+  ];
+}
+function initEuroChart(){
+  const canvas=document.getElementById('euro-chart'); if(!canvas) return;
+  euroChart=new Chart(canvas.getContext('2d'),{
+    type:'scatter',data:{datasets:buildEuroDatasets()},plugins:[euroPlugin],
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      scales:{
+        x:{type:'linear',min:2010.5,max:2025.7,ticks:{stepSize:1,callback:v=>Number.isInteger(v)?String(v):'',color:'#344d62',font:{family:'Inter,system-ui,sans-serif',size:11}},grid:{color:'#172840'},border:{color:'#172840'}},
+        y:{min:0,max:6.5,ticks:{callback:v=>'$'+v+'B',color:'#344d62',font:{family:'JetBrains Mono,monospace',size:10}},grid:{color:'#172840'},border:{color:'#172840'}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0f2035',borderColor:'#1f3655',borderWidth:1,titleColor:'#ccd6e0',bodyColor:'#637a90',padding:12,
+          titleFont:{family:'Inter,system-ui,sans-serif',size:12,weight:'600'},
+          bodyFont:{family:'JetBrains Mono,monospace',size:11},
+          callbacks:{
+            title(items){const i=items[0];if(i.dataset.label.includes('Deal')){const d=euroDeals.find(x=>x.id===i.raw.id);return d?d.club+' ('+d.year+')':i.dataset.label;}return i.dataset.label;},
+            label(i){if(i.dataset.label.includes('Deal')){const d=euroDeals.find(x=>x.id===i.raw.id);if(d)return[d.amount+' | '+d.stake,'Investor: '+d.investor];}return '$'+i.raw.y.toFixed(2)+'B avg';}
+          }
+        }
+      },
+      onClick(evt,els){if(!els.length)return;const e=els[0];const ds=euroChart.data.datasets[e.datasetIndex];if(ds.label.includes('Deal')){const d=euroDeals.find(x=>x.id===ds.data[e.index].id);if(d)openEuroModal(d);}},
+      onHover(evt,els){evt.native.target.style.cursor=els.length?'pointer':'default';}
+    }
+  });
+}
+let euroLeague='all';
+const leagueMap={epl:'b-epl',seriea:'b-seriea',laliga:'b-laliga',ligue1:'b-ligue1',multi:'b-multi'};
+function setEuroLeague(f,btn){
+  euroLeague=f;
+  document.querySelectorAll('#euro-league-filter .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderEuroClubTable();
+  if(euroChart){euroChart.data.datasets=buildEuroDatasets();euroChart.update();}
+}
+function renderEuroClubTable(){
+  const clubDeals=euroDeals.filter(d=>d.id.startsWith('e'));
+  const filtered=euroLeague==='all'?clubDeals:clubDeals.filter(d=>d.leagueBadge===leagueMap[euroLeague]);
+  const aug=filtered.map(d=>({...d,amountNum:parseValStr(d.amount)}));
+  aug.sort((a,b)=>cmp(a[euroSort.col],b[euroSort.col],euroSort.dir));
+  applySort('euro-thead',euroSort);
+  document.getElementById('euro-club-body').innerHTML=aug.map(d=>`
+    <tr onclick="openEuroModal(euroDeals.find(x=>x.id==='${d.id}'))">
+      <td class="col-dim">${d.year}</td>
+      <td><div class="col-name">${d.club}</div><div class="col-sub">${d.country}</div></td>
+      <td><span class="badge ${d.leagueBadge}">${d.league}</span></td>
+      <td><span class="badge ${d.typeBadge}">${d.type}</span></td>
+      <td class="col-dim">${d.investor}</td>
+      <td style="text-align:right" class="col-num">${d.amount}</td>
+      <td style="text-align:right" class="col-dim">${d.stake}</td>
+    </tr>`).join('');
+}
+function sortEuro(col){
+  euroSort.dir=euroSort.col===col?-euroSort.dir:-1;
+  euroSort.col=col;
+  renderEuroClubTable();
+}
+
+
 // ── CONTINENTAL EURO TRANSACTIONS ────────────────────────────────────────────
 const ceurDeals = [
   // ── SERIE A ─────────────────────────────────────────────────────────────────

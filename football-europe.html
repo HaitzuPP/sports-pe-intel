@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Market — Sports PE Intelligence</title>
+<title>Football: Europe — Sports PE Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -238,8 +238,8 @@ tbody tr:last-child td{border-bottom:none}
   <header class="header">
     <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
     <nav class="nav" id="main-nav">
-      <a class="nav-tab active" href="index.html">Market</a>
-      <a class="nav-tab" href="football-europe.html">Football: Europe</a>
+      <a class="nav-tab" href="index.html">Market</a>
+      <a class="nav-tab active" href="football-europe.html">Football: Europe</a>
       <a class="nav-tab" href="football-uk.html">Football: UK</a>
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
@@ -252,58 +252,87 @@ tbody tr:last-child td{border-bottom:none}
   <div class="data-timestamp" style="text-align:center;padding:4px 24px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Data current to April 2026. Valuations sourced from Sportico, Forbes, Deloitte, and public filings. All figures approximate unless otherwise noted.</div>
   <div class="content">
     <div class="page active">
-      <div class="sub-tabs" id="market-tabs" style="flex-shrink:0">
-        <button class="sub-tab active" onclick="setMarketTab('index',this)">Valuation Index</button>
-        <button class="sub-tab" onclick="setMarketTab('franchise',this)">Franchise Deals</button>
+      <div class="sub-tabs" id="euro-tabs" style="flex-shrink:0">
+        <button class="sub-tab active" onclick="setEuroTab('index',this)">Price Index</button>
+        <button class="sub-tab" onclick="setEuroTab('transactions',this)">Transactions</button>
       </div>
-      <div id="market-sec-index" style="flex:1;min-height:0;display:flex;flex-direction:column">
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">NFL Avg 2025</div><div class="stat-val green">$7.13B</div><div class="stat-chg up">+27.3% YoY</div></div>
-        <div class="stat-card"><div class="stat-label">NBA Avg 2025</div><div class="stat-val amber">$5.51B</div><div class="stat-chg up">+20.4% YoY</div></div>
-        <div class="stat-card"><div class="stat-label">Peak Deal</div><div class="stat-val">$12.8B</div><div class="stat-chg neu">Cowboys (NFL)</div></div>
-        <div class="stat-card"><div class="stat-label">NFL Combined</div><div class="stat-val">$228B</div><div class="stat-chg neu">32 franchises</div></div>
-        <div class="stat-card"><div class="stat-label">NBA Combined</div><div class="stat-val">$165B</div><div class="stat-chg neu">30 franchises</div></div>
-        <div class="stat-card"><div class="stat-label">PE Stake Cap</div><div class="stat-val">10/30%</div><div class="stat-chg neu">NFL / NBA</div></div>
-      </div>
-      <div class="chart-controls">
-        <div style="display:flex;align-items:center;gap:16px">
-          <span class="chart-label">Franchise Valuation Index 2019–2025 — NFL &amp; NBA avg, deal comps, and PE market access dates</span>
-          <div class="pill-group" id="chart-filter">
-            <button class="pill active" onclick="setChartFilter('all',this)">All</button>
-            <button class="pill" onclick="setChartFilter('nfl',this)">NFL</button>
-            <button class="pill" onclick="setChartFilter('nba',this)">NBA</button>
-          </div>
-        </div>
+      <div id="euro-sec-index" style="flex:1;min-height:0;display:flex;flex-direction:column">
+      <!-- Price index chart — Chart.js canvas -->
+      <div class="chart-controls" style="flex-shrink:0">
+        <span class="chart-label">Avg Club Valuation by League (2016–2025, $B)</span>
         <div class="chart-legend">
-          <div class="leg-item"><div class="leg-line" style="background:var(--green)"></div>NFL Avg</div>
-          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>NBA Avg</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--green);border-color:#86efac"></div>NFL Deal</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--amber);border-color:#fde68a"></div>NBA Deal</div>
+          <div class="leg-item"><div class="leg-line" style="background:var(--purple)"></div>EPL Avg</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--red)"></div>La Liga Avg</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--cyan)"></div>Serie A Avg</div>
+          <div class="leg-item"><div class="leg-line" style="border-top:2px dashed var(--amber)"></div>Ligue 1 Avg</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--purple);border-color:#9095d4"></div>EPL Deal</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--red);border-color:#d97878"></div>La Liga / L1</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--cyan);border-color:#4db3d4"></div>Serie A</div>
         </div>
       </div>
-      <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
-      </div><!-- end market-sec-index -->
-      <div id="market-sec-franchise" style="display:none;flex:1;min-height:0;display:none;flex-direction:column">
-        <div class="table-controls" style="flex-shrink:0">
-          <div class="pill-group" id="franchise-filter">
-            <button class="pill active" onclick="setFranchiseFilter('all',this)">All (22)</button>
-            <button class="pill" onclick="setFranchiseFilter('nfl',this)">NFL (11)</button>
-            <button class="pill" onclick="setFranchiseFilter('nba',this)">NBA (11)</button>
+      <div class="chart-wrap" style="height:340px;flex-shrink:0"><canvas id="euro-chart"></canvas></div>
+      <div class="euro-footnote" style="padding:4px 24px 8px;flex-shrink:0">Estimates based on Sportico, Deloitte Football Money League, and Forbes annual valuations. 2020 reflects COVID-adjusted figures. Deal dots are clickable for sourced deal detail.</div>
+      <!-- Club equity table — always visible below chart -->
+      <div style="border-top:1px solid var(--border);flex:1;min-height:0;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px">
+          <span class="chart-label">Club Equity Transactions</span>
+          <div class="pill-group" id="euro-league-filter">
+            <button class="pill active" onclick="setEuroLeague('all',this)">All (44)</button>
+            <button class="pill" onclick="setEuroLeague('epl',this)">Premier League</button>
+            <button class="pill" onclick="setEuroLeague('seriea',this)">Serie A</button>
+            <button class="pill" onclick="setEuroLeague('laliga',this)">La Liga</button>
+            <button class="pill" onclick="setEuroLeague('ligue1',this)">Ligue 1</button>
+            <button class="pill" onclick="setEuroLeague('multi',this)">Multi-club</button>
           </div>
-          <div style="font-size:11px;color:var(--text3)">22 NBA and NFL equity transactions 2020–2025. Valuation multiples vs league average at deal date.</div>
         </div>
-        <div class="tbl-wrap" style="flex:1">
-          <table>
-            <thead id="franchise-thead"><tr>
-              <th data-sort="year" onclick="sortFranchise('year')">Year</th>
-              <th data-sort="franchise" onclick="sortFranchise('franchise')">Franchise</th>
-              <th>League</th><th>Type</th>
-              <th data-sort="buyer" onclick="sortFranchise('buyer')">Buyer</th>
-              <th data-sort="val" onclick="sortFranchise('val')" style="text-align:right">Impl. Val.</th>
-              <th style="text-align:right">Stake</th>
-              <th data-sort="prem" onclick="sortFranchise('prem')" style="text-align:right">vs League Avg</th>
+        <div class="tbl-wrap" style="padding-top:0;flex:1;min-height:0;overflow-y:auto">
+          <table id="euro-club-table">
+            <thead id="euro-thead">
+              <tr>
+                <th data-sort="year" onclick="sortEuro('year')" style="width:50px">Year</th>
+                <th data-sort="club" onclick="sortEuro('club')" style="width:180px">Club</th>
+                <th data-sort="league" onclick="sortEuro('league')" style="width:140px">League</th>
+                <th data-sort="type" onclick="sortEuro('type')" style="width:110px">Type</th>
+                <th data-sort="investor" onclick="sortEuro('investor')">Investor</th>
+                <th data-sort="amountNum" onclick="sortEuro('amountNum')" style="text-align:right;width:110px">Amount</th>
+                <th data-sort="stake" onclick="sortEuro('stake')" style="text-align:right;width:120px">Stake</th>
+              </tr>
+            </thead>
+            <tbody id="euro-club-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+      </div><!-- end euro-sec-index -->
+
+      <!-- Transactions sub-tab: Continental Euro 46 deals -->
+      <div id="euro-sec-transactions" style="display:none;flex:1;min-height:0;display:none;flex-direction:column">
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);flex-shrink:0">
+          <div class="stat-card"><div class="stat-label">Total Deals</div><div class="stat-val">46</div><div class="stat-chg neu">2014 – 2025</div></div>
+          <div class="stat-card"><div class="stat-label">Disclosed Value</div><div class="stat-val amber">€6.2B+</div><div class="stat-chg neu">Excl. undisclosed</div></div>
+          <div class="stat-card"><div class="stat-label">US-led Deals</div><div class="stat-val green">18</div><div class="stat-chg up">Largest single cohort</div></div>
+          <div class="stat-card"><div class="stat-label">Largest Deal</div><div class="stat-val">AC Milan €1.2B</div><div class="stat-chg neu">RedBird Capital 2022</div></div>
+        </div>
+        <div style="padding:8px 24px;flex-shrink:0;display:flex;gap:4px" id="ceur-filter-row-2">
+          <button class="pill active" onclick="setCeurFilter2('all',this)">All Leagues</button>
+          <button class="pill" onclick="setCeurFilter2('ligue1',this)">Ligue 1</button>
+          <button class="pill" onclick="setCeurFilter2('laliga',this)">La Liga</button>
+          <button class="pill" onclick="setCeurFilter2('seriea',this)">Serie A</button>
+        </div>
+        <div class="tbl-wrap" style="overflow-y:auto;flex:1">
+          <table id="ceur-table-2">
+            <thead id="ceur-thead-2"><tr>
+              <th data-sort="year" onclick="sortCeur2('year')" style="width:44px">Year</th>
+              <th data-sort="club" onclick="sortCeur2('club')">Club</th>
+              <th class="hide-mobile">League</th>
+              <th data-sort="acquirer" onclick="sortCeur2('acquirer')">Acquirer</th>
+              <th data-sort="nationality" onclick="sortCeur2('nationality')" class="hide-mobile">Nationality</th>
+              <th style="text-align:right" class="hide-mobile">Stake</th>
+              <th data-sort="valueNum" onclick="sortCeur2('valueNum')" style="text-align:right">Value</th>
+              <th style="text-align:right">Type</th>
             </tr></thead>
-            <tbody id="franchise-body"></tbody>
+            <tbody id="ceur-body-2"></tbody>
           </table>
         </div>
       </div>
@@ -2095,9 +2124,10 @@ setInterval(tick,1000); tick();
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById("deal-count").textContent = "("+franchiseDeals.length+" franchise deals)";
-  initMainChart();
-  renderFranchiseTable();
+  document.getElementById("deal-count").textContent = "("+euroDeals.length+" club deals)";
+  renderEuroClubTable();
+  renderCeurTable2();
+  setTimeout(()=>{ initEuroChart(); }, 50);
 });
 </script>
 </body>

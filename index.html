@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Market — Sports PE Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -235,20 +234,16 @@ tbody tr:last-child td{border-bottom:none}
   <header class="header">
     <div class="logo"><div class="logo-dot"></div><span class="logo-text">Sports PE</span><span class="logo-sub">Intelligence</span></div>
     <nav class="nav" id="main-nav">
-      <a class="nav-tab  active" href="index.html">Market</a>
+      <a class="nav-tab active" href="index.html">Market</a>
       <a class="nav-tab" href="football-europe.html">Football: Europe</a>
       <a class="nav-tab" href="football-uk.html">Football: UK</a>
       <a class="nav-tab" href="capital-markets.html">Capital Markets</a>
       <a class="nav-tab" href="investors.html">Investors</a>
     </nav>
-    <div class="header-right">
-      <span class="badge-count" id="deal-count">-- deals</span>
-      <span class="clock" id="clock">--:--:--</span>
-    </div>
+    <div class="header-right"><span class="badge-count" id="deal-count">-- deals</span><span class="clock" id="clock">--:--:--</span></div>
   </header>
   <div class="data-timestamp" style="text-align:center;padding:4px 24px;font-size:10px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;letter-spacing:.3px">Data current to April 2026. Valuations sourced from Sportico, Forbes, Deloitte, and public filings. All figures approximate unless otherwise noted.</div>
-  <div class="content">
-    <div class="page active">
+  <div class="content"><div class="page active">
       <div class="sub-tabs" id="market-tabs" style="flex-shrink:0">
         <button class="sub-tab active" onclick="setMarketTab('index',this)">Valuation Index</button>
         <button class="sub-tab" onclick="setMarketTab('franchise',this)">Franchise Deals</button>
@@ -304,15 +299,9 @@ tbody tr:last-child td{border-bottom:none}
           </table>
         </div>
       </div>
-    </div>
-  </div>
+  </div></div>
 </div>
-<div class="modal-backdrop" id="modal" onclick="closeModal()">
-  <div class="modal" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
-    <div id="modal-inner"></div>
-  </div>
-</div>
+<div class="modal-backdrop" id="modal" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><button class="modal-close" onclick="closeModal()">&#x2715;</button><div id="modal-inner"></div></div></div>
 <script>
 const franchiseDeals = [
   {id:1, year:2020,xp:2020.0,franchise:'Utah Jazz',league:'NBA',badge:'b-nba',typeLabel:'Majority',typeBadge:'b-majority',buyer:'Ryan Smith (Qualtrics)',val:1.66,currency:'$',stake:'80%',lgAvg:2.10,prem:-21.0,source:'https://www.sportico.com/business/sales/2020/utah-jazz-sale-ryan-smith-1234612100/',notes:'Miller family ends 35-year ownership. Ryan Smith buys 80% at $1.66B implied. Arctos Sports Partners subsequently acquires a minority PE stake within 12 months, setting the stage for Arctos\'s broader sports expansion.'},
@@ -552,6 +541,7 @@ const tokenDeals = [
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let chartFilter='all', franchiseFilter='all', mediaFilter='all', tokenFilter='all', altFilter='all';
+let peFilter='all';
 const peInvestors = [
   {
     id:'pi1',rank:1,name:'CVC Capital Partners',short:'CVC',type:'pe',typeLabel:'PE Fund',typeBadge:'b-seriea',
@@ -2057,15 +2047,11 @@ function openMediaModal(d){
 }
 
 
-// ── CLOCK ───────────────────────────────────────────────────────────────────
 function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');document.getElementById('clock').textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());}
 setInterval(tick,1000);tick();
-// ── BOOT ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById("deal-count").textContent="("+franchiseDeals.length+" franchise deals)";
   initMainChart();
   renderFranchiseTable();
 });
-</script>
-</body>
-</html>
+</script></body></html>

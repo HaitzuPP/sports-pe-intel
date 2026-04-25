@@ -1601,6 +1601,43 @@ function openAltModal(d){
   `);
 }
 
+
+// ── LEAGUE AVERAGE & PROJECTION DATA ─────────────────────────────────────────
+// NFL league avg valuation (USD B) — Sportico annual franchise valuations
+const nflAvg = [
+  {x:2019,y:2.86},{x:2020,y:3.05},{x:2021,y:3.45},
+  {x:2022,y:4.20},{x:2023,y:4.80},{x:2024,y:5.60},{x:2025,y:7.13}
+];
+// NBA league avg valuation (USD B) — Sportico annual franchise valuations
+const nbaAvg = [
+  {x:2019,y:1.68},{x:2020,y:2.10},{x:2021,y:2.30},
+  {x:2022,y:2.58},{x:2023,y:3.50},{x:2024,y:4.58},{x:2025,y:5.51}
+];
+// Projection lines (2025-2028) — consensus sell-side estimates
+const nflProj = [{x:2025,y:7.13},{x:2026,y:8.50},{x:2027,y:9.80},{x:2028,y:11.00}];
+const nbaProj = [{x:2025,y:5.51},{x:2026,y:6.50},{x:2027,y:7.60},{x:2028,y:8.90}];
+// European league avg club valuation (USD B) — Deloitte Football Money League
+const eplAvg    = [
+  {x:2016,y:0.80},{x:2017,y:0.92},{x:2018,y:1.05},{x:2019,y:1.20},
+  {x:2020,y:1.18},{x:2021,y:1.45},{x:2022,y:1.85},{x:2023,y:2.20},
+  {x:2024,y:2.60},{x:2025,y:3.00}
+];
+const laligaAvg = [
+  {x:2016,y:0.55},{x:2017,y:0.62},{x:2018,y:0.72},{x:2019,y:0.83},
+  {x:2020,y:0.78},{x:2021,y:0.85},{x:2022,y:1.00},{x:2023,y:1.10},
+  {x:2024,y:1.20},{x:2025,y:1.35}
+];
+const serieaAvg = [
+  {x:2016,y:0.28},{x:2017,y:0.33},{x:2018,y:0.40},{x:2019,y:0.45},
+  {x:2020,y:0.42},{x:2021,y:0.50},{x:2022,y:0.70},{x:2023,y:0.82},
+  {x:2024,y:0.95},{x:2025,y:1.05}
+];
+const ligue1Avg = [
+  {x:2016,y:0.22},{x:2017,y:0.28},{x:2018,y:0.35},{x:2019,y:0.42},
+  {x:2020,y:0.38},{x:2021,y:0.45},{x:2022,y:0.55},{x:2023,y:0.72},
+  {x:2024,y:0.85},{x:2025,y:0.95}
+];
+
 // ── CHART PLUGINS ────────────────────────────────────────────────────────────
 const pePlugin = {
   id:'peLine',
